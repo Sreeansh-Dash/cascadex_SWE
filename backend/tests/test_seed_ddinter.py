@@ -14,7 +14,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-import pytest
 import pytest_asyncio
 from neo4j import AsyncGraphDatabase
 
@@ -23,41 +22,33 @@ NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
 NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "password")
 
 FIXTURES_DIR = Path(__file__).parent.parent / "data" / "fixtures"
-TEST_VERSION = "pytest-test-v1"
-
-pytestmark = pytest.mark.asyncio
+TEST_VERSION = "pytest-seed-v1"
 
 
 @pytest_asyncio.fixture
 async def clean_neo4j():
-    """Provide a Neo4j session and wipe test data before/after each test."""
+    """Open a fresh driver, clean test-version nodes before and after test."""
     driver = AsyncGraphDatabase.driver(
         NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)
     )
-    async with driver.session() as session:
-        # Tear down test nodes from previous runs
-        await session.run(
-            "MATCH (n) WHERE n.dataset_version = $v DETACH DELETE n",
-            v=TEST_VERSION,
-        )
-        await session.run(
-            "MATCH (v:DatasetVersion {version: $v}) DETACH DELETE v",
-            v=TEST_VERSION,
-        )
+
+    async def _wipe():
+        async with driver.session() as s:
+            await s.run(
+                "MATCH (n) WHERE n.dataset_version = $v DETACH DELETE n",
+                v=TEST_VERSION,
+            )
+            await s.run(
+                "MATCH (v:DatasetVersion {version: $v}) DETACH DELETE v",
+                v=TEST_VERSION,
+            )
+
+    await _wipe()
     try:
         async with driver.session() as session:
             yield session
     finally:
-        # Cleanup after test
-        async with driver.session() as cleanup_session:
-            await cleanup_session.run(
-                "MATCH (n) WHERE n.dataset_version = $v DETACH DELETE n",
-                v=TEST_VERSION,
-            )
-            await cleanup_session.run(
-                "MATCH (v:DatasetVersion {version: $v}) DETACH DELETE v",
-                v=TEST_VERSION,
-            )
+        await _wipe()
         await driver.close()
 
 
@@ -67,7 +58,6 @@ def test_dry_run_writes_nothing():
 
     from data.seed_ddinter import run_import
 
-    # Use obviously invalid Neo4j URI — if it tries to connect it will fail fast
     async def _run():
         await run_import(
             neo4j_uri="bolt://127.0.0.1:19999",  # nothing listening here
@@ -78,7 +68,6 @@ def test_dry_run_writes_nothing():
             dry_run=True,
         )
 
-    # Should complete without raising (no connection attempt in dry-run)
     asyncio.run(_run())
 
 
@@ -95,7 +84,7 @@ async def test_import_creates_expected_node_counts(clean_neo4j):
         dry_run=False,
     )
 
-    # Check Drug count
+    # Check Drug count for this version
     result = await clean_neo4j.run(
         "MATCH (d:Drug {dataset_version: $v}) RETURN count(d) AS cnt",
         v=TEST_VERSION,
@@ -103,7 +92,7 @@ async def test_import_creates_expected_node_counts(clean_neo4j):
     record = await result.single()
     assert record["cnt"] == 32, f"Expected 32 Drug nodes, got {record['cnt']}"
 
-    # Check DatasetVersion node exists
+    # Check DatasetVersion node exists with correct drug_count
     result = await clean_neo4j.run(
         "MATCH (v:DatasetVersion {version: $v}) RETURN v.drug_count AS dc",
         v=TEST_VERSION,
@@ -112,12 +101,14 @@ async def test_import_creates_expected_node_counts(clean_neo4j):
     assert record is not None, "DatasetVersion node not created"
     assert record["dc"] == 32
 
-    # Check INTERACTS_WITH edge count
+    # Check INTERACTS_WITH edge count (global — not version-tagged)
     result = await clean_neo4j.run(
         "MATCH ()-[r:INTERACTS_WITH]->() RETURN count(r) AS cnt"
     )
     record = await result.single()
-    assert record["cnt"] >= 16, f"Expected at least 16 interaction edges, got {record['cnt']}"
+    assert record["cnt"] >= 16, (
+        f"Expected at least 16 interaction edges, got {record['cnt']}"
+    )
 
 
 async def test_re_import_same_version_is_idempotent(clean_neo4j):
@@ -142,5 +133,6 @@ async def test_re_import_same_version_is_idempotent(clean_neo4j):
     )
     record = await result.single()
     assert record["cnt"] == 32, (
-        f"Idempotency broken: expected 32 Drug nodes after 2 imports, got {record['cnt']}"
+        f"Idempotency broken: expected 32 Drug nodes after 2 imports, "
+        f"got {record['cnt']}"
     )
