@@ -1,0 +1,102 @@
+# =============================================================================
+# CascadeX — .gitignore
+# =============================================================================
+
+# --- Python / Backend ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+.env            # never commit; use .env.example instead
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+*.log
+
+# --- Flutter / Frontend ---
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+*.iml
+*.class
+*.apk
+*.ipa
+*.dSYM.zip
+*.dSYM
+# Hive offline cache databases (Phase 08)
+*.hive
+*.lock.hive
+hive_boxes/
+
+# --- Docker ---
+*.override.yml
+
+# --- Neo4j local data (if running outside Docker) ---
+neo4j/data/
+neo4j/logs/
+neo4j/plugins/
+
+# --- OS / Editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- Scan images (retained for debug only, see docs) ---
+backend/data/image_scans/
+
+# --- Phase 06-09 additions ---
+
+# Encryption keys — NEVER commit (Phase 09)
+*.key
+*.pem
+*.p12
+encryption.key
+field_encryption.key
+
+# PDF exports generated at runtime (Phase 08)
+backend/data/exports/
+*.pdf
+
+# APScheduler job store (SQLite, if used locally — Phase 07)
+*.db
+jobs.sqlite
+
+# Performance / load-test artifacts (Phase 09)
+perf_results/
+*.perf.json
+locust_results/
+
+# pip-audit / dependency scan outputs (Phase 09)
+pip-audit-report.json
+audit-results/
+flutter_outdated.txt
+
+# Coverage reports
+htmlcov/
+.coverage
+coverage.xml
+coverage/
+
+# Pytest benchmark artifacts
+.benchmarks/
+
+# Structured log output files (Phase 09 — logs go to stdout/stderr in prod)
+logs/
+*.access.log
+
+# ReportLab / WeasyPrint temp files (Phase 08)
+*.tmp.html
+
+# Secrets scan false-positive suppression file (if using gitleaks/truffleHog)
+.gitleaks.toml

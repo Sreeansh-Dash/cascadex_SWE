@@ -1,0 +1,48 @@
+name: cascadex
+description: CascadeX — Drug-to-Drug Interaction Warning System
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.16.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.5.1
+
+  # Secure token storage (never SharedPreferences)
+  flutter_secure_storage: ^9.2.2
+
+  # Local cache (offline-first medication list)
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # HTTP client
+  dio: ^5.6.0
+
+  # Navigation
+  go_router: ^14.2.7
+
+  # PDF export (Phase 08)
+  pdf: ^3.11.1
+  printing: ^5.13.1
+
+  # Icons
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Code generation
+  build_runner: ^2.4.9
+
+  # Linting
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

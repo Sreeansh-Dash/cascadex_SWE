@@ -1,0 +1,13 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # Enforce library directives on all files
+    - library_annotations
+    # Prefer const constructors
+    - prefer_const_constructors
+    - prefer_const_literals_to_create_immutables
+    # Null safety
+    - avoid_null_checks_in_equality_operators
+    # Documentation
+    - public_member_api_docs
