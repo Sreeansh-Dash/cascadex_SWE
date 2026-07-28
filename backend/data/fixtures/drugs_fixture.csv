@@ -1,0 +1,33 @@
+drug_id,generic_name,drug_class,atc_code,default_form,external_source_id
+D001,warfarin,anticoagulant,B01AA03,tablet,DDI-001
+D002,aspirin,antiplatelet,B01AC06,tablet,DDI-002
+D003,metformin,biguanide antidiabetic,A10BA02,tablet,DDI-003
+D004,lisinopril,ACE inhibitor,C09AA03,tablet,DDI-004
+D005,atorvastatin,statin,C10AA05,tablet,DDI-005
+D006,amiodarone,antiarrhythmic,C01BD01,tablet,DDI-006
+D007,fluoxetine,SSRI antidepressant,N06AB03,capsule,DDI-007
+D008,metoprolol,beta-blocker,C07AB02,tablet,DDI-008
+D009,omeprazole,proton pump inhibitor,A02BC01,capsule,DDI-009
+D010,ciprofloxacin,fluoroquinolone antibiotic,J01MA02,tablet,DDI-010
+D011,simvastatin,statin,C10AA01,tablet,DDI-011
+D012,digoxin,cardiac glycoside,C01AA05,tablet,DDI-012
+D013,clopidogrel,antiplatelet,B01AC04,tablet,DDI-013
+D014,phenytoin,antiepileptic,N03AB02,capsule,DDI-014
+D015,rifampicin,rifamycin antibiotic,J04AB02,capsule,DDI-015
+D016,amlodipine,calcium channel blocker,C08CA01,tablet,DDI-016
+D017,methotrexate,antimetabolite,L04AX03,tablet,DDI-017
+D018,lithium,mood stabilizer,N05AN01,tablet,DDI-018
+D019,sildenafil,PDE5 inhibitor,G04BE03,tablet,DDI-019
+D020,nitroglycerin,nitrate,C01DA02,tablet,DDI-020
+D021,spironolactone,potassium-sparing diuretic,C03DA01,tablet,DDI-021
+D022,furosemide,loop diuretic,C03CA01,tablet,DDI-022
+D023,tramadol,opioid analgesic,N02AX02,capsule,DDI-023
+D024,sertraline,SSRI antidepressant,N06AB06,tablet,DDI-024
+D025,ibuprofen,NSAID,M01AE01,tablet,DDI-025
+D026,clarithromycin,macrolide antibiotic,J01FA09,tablet,DDI-026
+D027,carbamazepine,antiepileptic,N03AF01,tablet,DDI-027
+D028,verapamil,calcium channel blocker,C08DA01,tablet,DDI-028
+D029,ketoconazole,azole antifungal,J02AB02,tablet,DDI-029
+D030,levodopa,dopaminergic,N04BA01,tablet,DDI-030
+D031,theophylline,xanthine bronchodilator,R03DA04,tablet,DDI-031
+D032,azathioprine,immunosuppressant,L04AX01,tablet,DDI-032

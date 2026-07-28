@@ -23,10 +23,11 @@ from app.db.neo4j_session import lifespan, ping_neo4j
 # ---------------------------------------------------------------------------
 # Structured (JSON) logging — log user IDs, never names or drug lists
 # ---------------------------------------------------------------------------
-logging.basicConfig(
-    level=logging.INFO,
-    format='{"time": "%(asctime)s", "level": "%(levelname)s", "logger": "%(name)s", "message": "%(message)s"}',
+_LOG_FMT = (
+    '{"time": "%(asctime)s", "level": "%(levelname)s",'
+    ' "logger": "%(name)s", "message": "%(message)s"}'
 )
+logging.basicConfig(level=logging.INFO, format=_LOG_FMT)
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------

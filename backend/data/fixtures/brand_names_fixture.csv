@@ -1,0 +1,36 @@
+brand_id,drug_id,brand_name,manufacturer
+B001,D001,Coumadin,Bristol-Myers Squibb
+B002,D001,Jantoven,Upsher-Smith
+B003,D002,Disprin,Reckitt
+B004,D002,Ecotrin,Haleon
+B005,D003,Glucophage,Merck
+B006,D003,Glumetza,Valeant
+B007,D004,Zestril,AstraZeneca
+B008,D004,Prinivil,Merck
+B009,D005,Lipitor,Pfizer
+B010,D006,Cordarone,Wyeth
+B011,D006,Pacerone,Upsher-Smith
+B012,D007,Prozac,Eli Lilly
+B013,D007,Sarafem,Eli Lilly
+B014,D008,Lopressor,Novartis
+B015,D008,Toprol-XL,AstraZeneca
+B016,D009,Prilosec,AstraZeneca
+B017,D009,Losec,AstraZeneca
+B018,D010,Cipro,Bayer
+B019,D011,Zocor,Merck
+B020,D012,Lanoxin,Concordia
+B021,D013,Plavix,Sanofi
+B022,D014,Dilantin,Pfizer
+B023,D015,Rifadin,Sanofi
+B024,D016,Norvasc,Pfizer
+B025,D017,Rheumatrex,Pfizer
+B026,D018,Eskalith,Noven
+B027,D019,Viagra,Pfizer
+B028,D019,Revatio,Pfizer
+B029,D020,Nitrostat,Pfizer
+B030,D023,Ultram,Janssen
+B031,D024,Zoloft,Pfizer
+B032,D026,Biaxin,AbbVie
+B033,D027,Tegretol,Novartis
+B034,D028,Calan,Pfizer
+B035,D029,Nizoral,Janssen
