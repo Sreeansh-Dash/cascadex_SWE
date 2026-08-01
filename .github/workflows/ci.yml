@@ -23,7 +23,7 @@ jobs:
           - 7687:7687
           - 7474:7474
         options: >-
-          --health-cmd "wget -q --spider http://localhost:7474 || exit 1"
+          --health-cmd "cypher-shell -u neo4j -p test_password 'SHOW DATABASES;' || exit 1"
           --health-interval 10s
           --health-timeout 10s
           --health-retries 10
@@ -82,7 +82,7 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Analyze (dart analyze)
+      - name: Analyze (flutter analyze)
         run: flutter analyze
 
       - name: Run widget tests

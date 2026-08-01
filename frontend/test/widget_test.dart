@@ -5,7 +5,6 @@
 /// - The onboarding screen renders with the correct AppBar title.
 library;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cascadex/main.dart';
 
