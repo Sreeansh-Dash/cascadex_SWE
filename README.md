@@ -136,8 +136,8 @@ cascadex/
 | Phase | Description | Status |
 |---|---|---|
 | 01 | Infrastructure scaffold | ✅ Done |
-| 02 | Drug data ingestion (DDInter/RxNorm) | ⏳ Pending |
-| 03 | Auth & users (JWT + Argon2 + RBAC) | ⏳ Pending |
+| 02 | Drug data ingestion (DDInter/RxNorm) | ✅ Done |
+| 03 | Auth & users (JWT + Argon2 + RBAC) | ✅ Done |
 | 04 | Medication CRUD + dose logging | ⏳ Pending |
 | 05 | OCR scan-to-add flow | ⏳ Pending |
 | 06 | Interaction engine | ⏳ Pending |

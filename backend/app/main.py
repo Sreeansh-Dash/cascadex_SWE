@@ -15,6 +15,8 @@ import logging.config
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app.api import alerts, auth, history, medications, scans
 from app.core.config import settings
@@ -48,6 +50,12 @@ app = FastAPI(
 )
 
 # ---------------------------------------------------------------------------
+# Rate Limiting (slowapi)
+# ---------------------------------------------------------------------------
+app.state.limiter = auth.limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# ---------------------------------------------------------------------------
 # CORS
 # ---------------------------------------------------------------------------
 app.add_middleware(
@@ -72,6 +80,7 @@ app.include_router(history.router, prefix=API_V1_PREFIX)
 # ---------------------------------------------------------------------------
 # Health endpoint
 # ---------------------------------------------------------------------------
+
 
 @app.get(
     "/health",
