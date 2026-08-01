@@ -14,6 +14,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import pytest
 import pytest_asyncio
 from neo4j import AsyncGraphDatabase
 
@@ -23,6 +24,8 @@ NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "password")
 
 FIXTURES_DIR = Path(__file__).parent.parent / "data" / "fixtures"
 TEST_VERSION = "pytest-seed-v1"
+
+pytestmark = pytest.mark.asyncio
 
 
 @pytest_asyncio.fixture
@@ -52,23 +55,18 @@ async def clean_neo4j():
         await driver.close()
 
 
-def test_dry_run_writes_nothing():
+async def test_dry_run_writes_nothing():
     """Dry-run mode parses and validates CSVs without connecting to Neo4j."""
-    import asyncio
-
     from data.seed_ddinter import run_import
 
-    async def _run():
-        await run_import(
-            neo4j_uri="bolt://127.0.0.1:19999",  # nothing listening here
-            neo4j_user="x",
-            neo4j_password="x",
-            source_dir=FIXTURES_DIR,
-            version="dry-run-test",
-            dry_run=True,
-        )
-
-    asyncio.run(_run())
+    await run_import(
+        neo4j_uri="bolt://127.0.0.1:19999",  # nothing listening here
+        neo4j_user="x",
+        neo4j_password="x",
+        source_dir=FIXTURES_DIR,
+        version="dry-run-test",
+        dry_run=True,
+    )
 
 
 async def test_import_creates_expected_node_counts(clean_neo4j):
