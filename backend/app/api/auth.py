@@ -22,6 +22,8 @@ from app.models.user import (
 )
 from app.services import auth_service
 
+from app.core.config import settings
+
 router = APIRouter(prefix="/auth", tags=["auth"])
 limiter = Limiter(key_func=get_remote_address)
 
@@ -32,7 +34,7 @@ limiter = Limiter(key_func=get_remote_address)
     status_code=status.HTTP_201_CREATED,
     summary="Register a primary user",
 )
-@limiter.limit("10/minute")
+@limiter.limit(lambda: settings.rate_limit_register)
 async def register(
     request: Request,
     user_data: UserCreate,
@@ -51,7 +53,7 @@ async def register(
     status_code=status.HTTP_200_OK,
     summary="Authenticate with email/phone and password",
 )
-@limiter.limit("10/minute")
+@limiter.limit(lambda: settings.rate_limit_login)
 async def login(
     request: Request,
     credentials: LoginRequest,
@@ -88,7 +90,7 @@ async def refresh_token(
     status_code=status.HTTP_200_OK,
     summary="Request a 6-digit OTP code",
 )
-@limiter.limit("5/minute")
+@limiter.limit(lambda: settings.rate_limit_login)
 async def request_otp_code(
     request: Request,
     otp_req: OTPRequest,

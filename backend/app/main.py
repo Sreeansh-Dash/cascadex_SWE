@@ -17,6 +17,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.api import alerts, auth, history, medications, scans
 from app.core.config import settings
@@ -65,6 +66,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# SlowAPIMiddleware MUST come after CORSMiddleware so the rate-limit state
+# (request.state.view_rate_limit) is set before route handlers run.
+app.add_middleware(SlowAPIMiddleware)
 
 # ---------------------------------------------------------------------------
 # API routers — all versioned under /api/v1/

@@ -10,7 +10,10 @@ __pycache__/
 .venv/
 venv/
 env/
-.env            # never commit; use .env.example instead
+.env
+*.env
+**/.env
+backend/.env
 *.egg-info/
 dist/
 build/

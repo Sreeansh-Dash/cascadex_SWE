@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     jwt_access_token_expire_minutes: int = 15
     jwt_refresh_token_expire_days: int = 7
 
-    # Application environment: "dev" | "staging" | "production"
+    # Application environment: "dev" | "test" | "staging" | "production"
     env: str = "dev"
 
     # CORS — comma-separated origins allowed to call the API
@@ -48,6 +48,24 @@ class Settings(BaseSettings):
     def is_dev(self) -> bool:
         """True when running in the development environment."""
         return self.env.lower() == "dev"
+
+    @property
+    def is_test(self) -> bool:
+        """True when running the test suite (ENV=test)."""
+        return self.env.lower() == "test"
+
+    @property
+    def rate_limit_register(self) -> str:
+        """Rate limit string for the /register endpoint.
+
+        High limit in test mode so integration tests can freely register users.
+        """
+        return "10000/minute" if self.is_test else "10/minute"
+
+    @property
+    def rate_limit_login(self) -> str:
+        """Rate limit string for the /login and /otp endpoints."""
+        return "10000/minute" if self.is_test else "10/minute"
 
 
 # Module-level singleton — import `settings` from here everywhere
