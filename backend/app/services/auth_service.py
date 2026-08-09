@@ -244,7 +244,9 @@ async def request_otp(email_or_phone: str, session: AsyncSession) -> OTPResponse
     """
     await session.run(update_query, {"user_id": user_id, "otp_hash": hashed, "expires_at": expires_at})
 
-    otp_dev = raw_otp if settings.is_dev else None
+    # Expose raw OTP in dev and test modes only — never in staging/production.
+    # Tests run with ENV=test so they need otp_dev to call verify_otp.
+    otp_dev = raw_otp if (settings.is_dev or settings.is_test) else None
     return OTPResponse(
         message="OTP sent successfully",
         otp_dev=otp_dev,

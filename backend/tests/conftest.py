@@ -6,8 +6,8 @@ Provides a real Neo4j-backed AsyncClient for all Phase 04+ integration tests.
 Strategy:
 - Uses the real FastAPI app with real Neo4j (bolt://localhost:7687).
 - All fixtures are function-scoped to avoid pytest-asyncio event_loop scope issues.
-- Drug catalog is seeded per test (idempotent MERGE — fast after first run).
-- User/Medication/Dose nodes are cleaned up after each test for isolation.
+- Drug catalog is seeded per test (idempotent MERGE - fast after first run).
+- User/Medication/Dose/Scan nodes are cleaned up after each test for isolation.
 
 Environment: requires Neo4j running.
   Start with: docker compose up -d neo4j  (from cascadex/ directory)
@@ -36,12 +36,21 @@ from app.main import app  # noqa: E402
 
 @pytest_asyncio.fixture
 async def neo4j_driver():
-    """Direct Neo4j driver for setup/teardown — bypasses FastAPI."""
+    """Direct Neo4j driver for setup/teardown - bypasses FastAPI.
+
+    Skips gracefully when Neo4j is not running (unit tests don't need it).
+    """
+    import pytest
+    from neo4j.exceptions import ServiceUnavailable
     driver = AsyncGraphDatabase.driver(
         os.environ["NEO4J_URI"],
         auth=(os.environ["NEO4J_USER"], os.environ["NEO4J_PASSWORD"]),
     )
-    await driver.verify_connectivity()
+    try:
+        await driver.verify_connectivity()
+    except ServiceUnavailable:
+        await driver.close()
+        pytest.skip("Neo4j not running - skipping integration test")
     yield driver
     await driver.close()
 
@@ -55,7 +64,8 @@ async def seed_drug_catalog(neo4j_driver):
     """Seed minimal drug catalog before each test (idempotent MERGE).
 
     Creates 4 Drug nodes + 3 brand name nodes + schema constraints.
-    MERGE makes this safe to call repeatedly — no duplicates.
+    MERGE makes this safe to call repeatedly - no duplicates.
+    Automatically skipped when neo4j_driver skips (unit tests).
     """
     async with neo4j_driver.session() as session:
         # Schema constraints (idempotent — safe to call every time)
@@ -114,6 +124,7 @@ async def seed_drug_catalog(neo4j_driver):
     # ---------------------------------------------------------------------------
     async with neo4j_driver.session() as session:
         # DETACH DELETE cascades to relationships; order avoids constraint errors
+        await session.run("MATCH (s:ScanRecord)   DETACH DELETE s")
         await session.run("MATCH (l:DoseIntakeLog) DETACH DELETE l")
         await session.run("MATCH (s:DoseSchedule)  DETACH DELETE s")
         await session.run("MATCH (m:MedicationEntry) DETACH DELETE m")
@@ -134,14 +145,49 @@ async def client(seed_drug_catalog):  # noqa: ARG001 — dependency ensures DB i
 
 
 # ---------------------------------------------------------------------------
-# Shared helper used by multiple test modules
+# Shared helpers — fixtures for Phase 05+ tests
 # ---------------------------------------------------------------------------
+
+
+@pytest_asyncio.fixture
+async def auth_factory(client):
+    """Return a coroutine factory that registers+logs in a unique user.
+
+    For Phase 05+ tests that want a fixture-injected helper::
+
+        async def test_something(client, auth_factory):
+            headers = await auth_factory(suffix="_foo")
+    """
+    async def _factory(suffix: str = "") -> dict:
+        return await register_and_login(client, suffix=suffix)
+
+    return _factory
+
+
+@pytest_asyncio.fixture
+async def seed_drug():
+    """Return a DrugRead for the seeded warfarin drug (already in DB via autouse fixture)."""
+    from app.models.drug import DrugRead
+    return DrugRead(
+        drug_id="drug_war01",
+        generic_name="warfarin",
+        drug_class="anticoagulant",
+        atc_code="B01AA03",
+        default_form="tablet",
+        external_source_id="DB00682",
+    )
+
+
+# ---------------------------------------------------------------------------
+# Standalone helper — imported by ALL test modules (Phase 04+)
+# ---------------------------------------------------------------------------
+
 
 async def register_and_login(client: AsyncClient, suffix: str = "") -> dict:
     """Register a unique user and return Bearer auth headers.
 
-    Uses a random UUID suffix so multiple calls within one test don't collide.
-    Login body uses JSON (LoginRequest schema — NOT OAuth2 form data).
+    Uses a random UUID so multiple calls per test never collide.
+    Imported directly by test modules; also called inside the auth_factory fixture.
     """
     import uuid
     uid = uuid.uuid4().hex[:10]

@@ -34,6 +34,15 @@ dependencies:
   # Icons
   cupertino_icons: ^1.0.8
 
+  # Phase 05: OCR — on-device ML Kit text recognition (no cloud calls)
+  google_mlkit_text_recognition: ^0.13.0
+
+  # Phase 05: Camera capture
+  image_picker: ^1.1.2
+
+  # Phase 05: HTTP calls from OCR service
+  http: ^1.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -43,6 +52,9 @@ dev_dependencies:
 
   # Linting
   flutter_lints: ^4.0.0
+
+  # Phase 05: HTTP mock for widget tests (http package includes MockClient)
+  mockito: ^5.4.4
 
 flutter:
   uses-material-design: true

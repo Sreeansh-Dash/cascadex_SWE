@@ -32,6 +32,13 @@ class Settings(BaseSettings):
     # CORS — comma-separated origins allowed to call the API
     allowed_origins: str = "http://localhost:3000,http://localhost:8080"
 
+    # LLM / OCR — Phase 05
+    # Empty string = stub mode (exact-match only, no network call).
+    # Set GEMINI_API_KEY in .env to enable fuzzy LLM matching.
+    gemini_api_key: str = ""
+    # Maximum candidate drugs forwarded to the LLM for fuzzy selection.
+    ocr_match_top_k: int = 20
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

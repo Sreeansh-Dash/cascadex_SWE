@@ -25,6 +25,9 @@ class DrugRead(BaseModel):
         atc_code: WHO ATC code (e.g. ``"B01AA03"``), may be empty string.
         default_form: Typical dosage form (e.g. ``"tablet"``, ``"capsule"``).
         external_source_id: Source-system ID from DDInter or RxNorm, if available.
+        matched_name: The name (brand or generic) that actually triggered the match,
+            populated by the OCR match service and catalog search. ``None`` when
+            the record comes from a direct drug_id lookup.
     """
 
     drug_id: str
@@ -33,6 +36,7 @@ class DrugRead(BaseModel):
     atc_code: str = ""
     default_form: str = ""
     external_source_id: str = ""
+    matched_name: str | None = None  # phase 05: OCR / brand-name hit
 
 
 class DrugInteractionRead(BaseModel):

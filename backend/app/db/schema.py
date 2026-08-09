@@ -55,6 +55,11 @@ async def ensure_constraints(session: AsyncSession) -> None:
         CREATE INDEX brand_name IF NOT EXISTS
         FOR (b:DrugBrandName) ON (b.brand_name)
         """,
+        # ScanRecord — Phase 05 OCR scan audit trail
+        """
+        CREATE CONSTRAINT scan_id_unique IF NOT EXISTS
+        FOR (s:ScanRecord) REQUIRE s.scan_id IS UNIQUE
+        """,
     ]
 
     for stmt in statements:
