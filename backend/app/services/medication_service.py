@@ -1,11 +1,17 @@
 """
-CascadeX medication service — Phase 04.
+CascadeX medication service — Phase 04 (updated Phase 06).
 
 Implements all business logic for:
 - Catalog drug search (prefix/contains, generic + brand)
 - MedicationEntry CRUD (add, list, update/deactivate)
 - DoseSchedule management
 - DoseIntakeLog creation and retrieval
+
+Phase 06 addition:
+- After add_medication() and update_medication() (non-deactivation path),
+  interaction_engine.check_pairs() is called with the user's full active
+  drug list. The result is embedded in MedicationRead.interaction_check.
+  Phase 07 will additionally persist alert nodes from this result.
 
 Design rules:
 - Every query is scoped to the authenticated user_id — client-supplied user IDs
@@ -15,7 +21,6 @@ Design rules:
   (raises 404 / "drug_not_found" if the drug does not exist in the catalog).
 - input_method is always "manual" in this phase; Phase 05 passes "scan" through
   the same service function without any schema changes.
-- No interaction checking is triggered here; Phase 06 wires that in explicitly.
 """
 
 from __future__ import annotations
@@ -37,8 +42,40 @@ from app.models.medication import (
     MedicationRead,
     MedicationUpdate,
 )
+from app.models.interaction import InteractionCheckResult
+from app.services import interaction_engine
 
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
+
+async def _get_active_drug_ids(session: AsyncSession, user_id: str) -> list[str]:
+    """Fetch all active drug_ids for a user in a single Cypher query.
+
+    Used by add_medication and update_medication before calling check_pairs.
+    Returns the raw drug_id strings (not MedicationRead objects) to keep the
+    interaction engine call lightweight.
+
+    Args:
+        session: Open Neo4j async session.
+        user_id: The authenticated user's ID.
+
+    Returns:
+        List of drug_id strings for all active MedicationEntry nodes.
+    """
+    res = await session.run(
+        """
+        MATCH (u:User {user_id: $user_id})-[:HAS_MEDICATION]->(me:MedicationEntry)
+        WHERE me.is_active = true
+        RETURN me.drug_id AS drug_id
+        """,
+        {"user_id": user_id},
+    )
+    records = await res.data()
+    return [r["drug_id"] for r in records]
 
 
 # ---------------------------------------------------------------------------
@@ -222,7 +259,7 @@ async def add_medication(
             days_of_week=s_node.get("days_of_week") or [],
         ))
 
-    return MedicationRead(
+    result = MedicationRead(
         entry_id=me_node["entry_id"],
         drug_id=me_node["drug_id"],
         generic_name=me_node["generic_name"],
@@ -237,6 +274,15 @@ async def add_medication(
         created_at=me_node["created_at"],
         schedules=schedule_reads,
     )
+
+    # Phase 06: run interaction check against all active drugs (including this one)
+    active_drug_ids = await _get_active_drug_ids(session, user_id)
+    interaction_result: InteractionCheckResult = await interaction_engine.check_pairs(
+        session, drug_ids=active_drug_ids
+    )
+    result.interaction_check = interaction_result
+
+    return result
 
 
 async def list_medications(
@@ -468,7 +514,19 @@ async def update_medication(
                     },
                 )
 
-    return await get_medication(session, user_id, entry_id)
+    # Fetch updated entry then attach interaction check
+    updated = await get_medication(session, user_id, entry_id)
+
+    # Phase 06: run interaction check after any non-deactivation edit
+    # (deactivation removes a drug from the active list, so no check needed)
+    if not payload.deactivate:
+        active_drug_ids = await _get_active_drug_ids(session, user_id)
+        interaction_result: InteractionCheckResult = await interaction_engine.check_pairs(
+            session, drug_ids=active_drug_ids
+        )
+        updated.interaction_check = interaction_result
+
+    return updated
 
 
 # ---------------------------------------------------------------------------

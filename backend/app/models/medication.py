@@ -11,6 +11,9 @@ Allowed dosage units (document here — enforced via Literal):
 
 input_method is always "manual" in Phase 04; Phase 05 will write "scan" for
 OCR-originated entries without needing a migration.
+
+Phase 06 adds:
+- MedicationRead.interaction_check (optional) — populated after add/update.
 """
 
 from __future__ import annotations
@@ -19,6 +22,9 @@ from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+
+# Phase 06: direct import needed (Pydantic resolves annotations at runtime)
+from app.models.interaction import InteractionCheckResult  # noqa: F401  (re-exported)
 
 
 # ---------------------------------------------------------------------------
@@ -128,7 +134,12 @@ class MedicationUpdate(BaseModel):
 
 
 class MedicationRead(BaseModel):
-    """Response schema for a MedicationEntry node."""
+    """Response schema for a MedicationEntry node.
+
+    Phase 06 note: ``interaction_check`` is populated on POST /medications and
+    PATCH /medications/{id} responses.  It is ``None`` on GET list/detail calls
+    (no check is triggered for read-only operations).
+    """
 
     entry_id: str
     drug_id: str
@@ -143,6 +154,8 @@ class MedicationRead(BaseModel):
     end_date: str | None = None
     created_at: str
     schedules: list[DoseScheduleRead] = []
+    # Phase 06 — populated after add/update; None for read-only responses
+    interaction_check: InteractionCheckResult | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

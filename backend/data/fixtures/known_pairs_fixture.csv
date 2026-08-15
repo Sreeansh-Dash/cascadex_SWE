@@ -1,0 +1,9 @@
+drug_a,drug_b,drug_a_id,drug_b_id,expected_severity,expected_mechanism_contains
+warfarin,aspirin,D001,D002,major,hemorrhage
+warfarin,amiodarone,D001,D006,major,CYP2C9
+sildenafil,nitroglycerin,D019,D020,major,hypotension
+clarithromycin,simvastatin,D026,D011,major,rhabdomyolysis
+fluoxetine,tramadol,D007,D023,moderate,serotonin
+metoprolol,verapamil,D008,D028,moderate,bradycardia
+warfarin,omeprazole,D001,D009,minor,CYP2C19
+atorvastatin,amlodipine,D005,D016,minor,CYP3A4
