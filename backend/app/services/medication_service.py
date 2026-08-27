@@ -1,5 +1,5 @@
 """
-CascadeX medication service — Phase 04 (updated Phase 06).
+CascadeX medication service — Phase 04 (updated Phase 07).
 
 Implements all business logic for:
 - Catalog drug search (prefix/contains, generic + brand)
@@ -11,7 +11,12 @@ Phase 06 addition:
 - After add_medication() and update_medication() (non-deactivation path),
   interaction_engine.check_pairs() is called with the user's full active
   drug list. The result is embedded in MedicationRead.interaction_check.
-  Phase 07 will additionally persist alert nodes from this result.
+
+Phase 07 addition:
+- alert_service.create_alerts_from_check_result() is called immediately after
+  check_pairs() so detected interactions are persisted as InteractionAlert nodes.
+  entry_ids_by_drug_id is derived from _get_active_entries_map() so alert nodes
+  carry valid entry references.
 
 Design rules:
 - Every query is scoped to the authenticated user_id — client-supplied user IDs
@@ -43,7 +48,7 @@ from app.models.medication import (
     MedicationUpdate,
 )
 from app.models.interaction import InteractionCheckResult
-from app.services import interaction_engine
+from app.services import alert_service, interaction_engine
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +81,31 @@ async def _get_active_drug_ids(session: AsyncSession, user_id: str) -> list[str]
     )
     records = await res.data()
     return [r["drug_id"] for r in records]
+
+
+async def _get_active_entries_map(session: AsyncSession, user_id: str) -> dict[str, str]:
+    """Fetch a {drug_id: entry_id} mapping for all active MedicationEntry nodes.
+
+    Used by Phase 07 alert creation so InteractionAlert nodes can reference
+    the specific MedicationEntry for each drug in a pair.
+
+    Args:
+        session: Open Neo4j async session.
+        user_id: The authenticated user's ID.
+
+    Returns:
+        Dict mapping drug_id → entry_id for all active entries.
+    """
+    res = await session.run(
+        """
+        MATCH (u:User {user_id: $user_id})-[:HAS_MEDICATION]->(me:MedicationEntry)
+        WHERE me.is_active = true
+        RETURN me.drug_id AS drug_id, me.entry_id AS entry_id
+        """,
+        {"user_id": user_id},
+    )
+    records = await res.data()
+    return {r["drug_id"]: r["entry_id"] for r in records}
 
 
 # ---------------------------------------------------------------------------
@@ -276,11 +306,17 @@ async def add_medication(
     )
 
     # Phase 06: run interaction check against all active drugs (including this one)
-    active_drug_ids = await _get_active_drug_ids(session, user_id)
+    entry_ids_by_drug_id = await _get_active_entries_map(session, user_id)
+    active_drug_ids = list(entry_ids_by_drug_id.keys())
     interaction_result: InteractionCheckResult = await interaction_engine.check_pairs(
         session, drug_ids=active_drug_ids
     )
     result.interaction_check = interaction_result
+
+    # Phase 07: persist alerts from interaction check result
+    await alert_service.create_alerts_from_check_result(
+        session, user_id, interaction_result, entry_ids_by_drug_id
+    )
 
     return result
 
@@ -520,11 +556,17 @@ async def update_medication(
     # Phase 06: run interaction check after any non-deactivation edit
     # (deactivation removes a drug from the active list, so no check needed)
     if not payload.deactivate:
-        active_drug_ids = await _get_active_drug_ids(session, user_id)
+        entry_ids_by_drug_id = await _get_active_entries_map(session, user_id)
+        active_drug_ids = list(entry_ids_by_drug_id.keys())
         interaction_result: InteractionCheckResult = await interaction_engine.check_pairs(
             session, drug_ids=active_drug_ids
         )
         updated.interaction_check = interaction_result
+
+        # Phase 07: persist alerts from interaction check result
+        await alert_service.create_alerts_from_check_result(
+            session, user_id, interaction_result, entry_ids_by_drug_id
+        )
 
     return updated
 

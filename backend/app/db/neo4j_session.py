@@ -69,6 +69,23 @@ async def ping_neo4j() -> bool:
         return False
 
 
+def get_driver() -> AsyncDriver:
+    """Return the module-level Neo4j driver.
+
+    Intended for background jobs (e.g. dose_scheduler) that need a driver
+    reference outside of a FastAPI request context.
+
+    Raises:
+        RuntimeError: If the driver has not been initialised yet.
+    """
+    if _driver is None:
+        raise RuntimeError(
+            "Neo4j driver is not initialised. "
+            "Ensure init_driver() ran during application startup."
+        )
+    return _driver
+
+
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     """FastAPI dependency that yields a Neo4j async session.
 
@@ -92,12 +109,25 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):  # noqa: ARG001
+async def lifespan(app: FastAPI):
     """FastAPI lifespan context manager.
 
-    Initialises the Neo4j driver on startup and closes it on shutdown.
+    Initialises the Neo4j driver on startup and starts the dose-reminder
+    APScheduler.  Both are closed/stopped cleanly on shutdown.
     Import this and pass it to `FastAPI(lifespan=lifespan)`.
     """
     await init_driver()
+
+    # Phase 07: start dose-reminder scheduler (no-op if APScheduler not installed)
+    from app.services import dose_scheduler  # local import avoids circular deps
+    await dose_scheduler.start_scheduler(app)
+
     yield
+
+    # Shutdown scheduler if it was started
+    scheduler = getattr(app.state, "scheduler", None)
+    if scheduler is not None:
+        scheduler.shutdown(wait=False)
+        logger.info("Dose reminder scheduler stopped.")
+
     await close_driver()

@@ -229,6 +229,7 @@ async def seed_drug_catalog(neo4j_driver):
     # ---------------------------------------------------------------------------
     async with neo4j_driver.session() as session:
         # DETACH DELETE cascades to relationships; order avoids constraint errors
+        await session.run("MATCH (n:Notification)   DETACH DELETE n")
         await session.run("MATCH (a:InteractionAlert) DETACH DELETE a")
         await session.run("MATCH (s:ScanRecord)   DETACH DELETE s")
         await session.run("MATCH (l:DoseIntakeLog) DETACH DELETE l")

@@ -31,3 +31,7 @@ anyio>=4.7.0
 
 # Linting
 ruff==0.6.9
+
+# Phase 08: PDF export (history)
+reportlab==4.2.5
+pypdf==4.3.1
