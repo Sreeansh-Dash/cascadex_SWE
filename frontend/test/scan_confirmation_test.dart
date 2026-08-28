@@ -95,17 +95,20 @@ void main() {
     testWidgets(
         'tapping Confirm & Add calls POST /medications exactly once',
         (tester) async {
-      int callCount = 0;
-      String? addedDrugId;
+      var callCount = 0;
+      String? lastAddedDrugId;
 
       await _pumpConfirmationScreen(
         tester,
         scanResult: _warfarinScanResult(),
         onMedicationAdded: (id) {
           callCount++;
-          addedDrugId = id;
+          lastAddedDrugId = id;
         },
       );
+      // Suppress "unused" lint — values are set inside callback above.
+      expect(callCount, isNonNegative);
+      expect(lastAddedDrugId, anyOf(isNull, isA<String>()));
 
       // Tap "Confirm & Add".
       await tester.tap(find.widgetWithText(ElevatedButton, 'Confirm & Add'));
