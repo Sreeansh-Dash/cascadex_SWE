@@ -13,7 +13,7 @@ Critical invariant:
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from neo4j import AsyncSession
@@ -52,7 +52,7 @@ async def create_scan(
     """Run OCR match pipeline and persist a ScanRecord audit node."""
     user_id: str = auth_context["user_id"]
     scan_id = f"scan_{uuid.uuid4().hex}"
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
 
     # Run the two-stage match pipeline
     match_result = await run_ocr_match(body.ocr_text, session)

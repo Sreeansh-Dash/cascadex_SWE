@@ -19,7 +19,12 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.platypus import HRFlowable, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
-from app.models.history import AlertHistoryEvent, DoseHistoryEvent, HistoryEvent, HistoryFeedResponse
+from app.models.history import (
+    AlertHistoryEvent,
+    DoseHistoryEvent,
+    HistoryEvent,
+    HistoryFeedResponse,
+)
 
 logger = logging.getLogger(__name__)
 

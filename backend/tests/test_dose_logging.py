@@ -16,7 +16,6 @@ from httpx import AsyncClient
 
 from tests.conftest import register_and_login
 
-
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
@@ -209,7 +208,7 @@ async def test_dose_logs_returned_chronologically(client: AsyncClient):
     assert resp.status_code == 200
     logs = resp.json()
     assert len(logs) == 3
-    returned_times = [l["scheduled_time"] for l in logs]
+    returned_times = [log["scheduled_time"] for log in logs]
     assert returned_times == sorted(returned_times), \
         f"Expected chronological ASC order, got: {returned_times}"
 
@@ -227,7 +226,7 @@ async def test_all_three_statuses_in_one_entry(client: AsyncClient):
     resp = await client.get(f"/api/v1/medications/{entry_id}/doses", headers=headers)
     logs = resp.json()
     assert len(logs) == 3
-    statuses = [l["status"] for l in logs]
+    statuses = [log["status"] for log in logs]
     assert set(statuses) == {"taken", "missed", "skipped"}
 
 

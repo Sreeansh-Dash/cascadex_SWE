@@ -8,8 +8,8 @@ Tests for `GET /api/v1/history` endpoint:
 - Empty history returns empty list with has_more=False
 """
 
-import asyncio
 from datetime import UTC, datetime, timedelta
+
 import pytest
 from httpx import AsyncClient
 

@@ -6,7 +6,6 @@ Endpoints:
 - GET /api/v1/history/export — streams clinical summary PDF
 """
 
-from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Response
 from neo4j import AsyncSession

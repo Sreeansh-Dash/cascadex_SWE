@@ -16,7 +16,6 @@ from app.models.interaction import InteractionCheckResult, PairwiseInteraction
 from app.services import alert_service, notification_service
 from app.services.notification_service import InAppChannel
 
-
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------

@@ -19,7 +19,6 @@ from httpx import AsyncClient
 
 from tests.conftest import register_and_login
 
-
 # ---------------------------------------------------------------------------
 # Drug catalog search
 # ---------------------------------------------------------------------------

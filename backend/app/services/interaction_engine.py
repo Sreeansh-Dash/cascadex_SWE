@@ -86,9 +86,11 @@ def normalize_severity(raw: str) -> Literal["minor", "moderate", "major"]:
     """
     try:
         return _SEVERITY_MAP[raw]
-    except KeyError:
-        raise ValueError(f"Unknown severity value from DDInter: {raw!r}. "
-                         "Add it to _SEVERITY_MAP if this is a valid DDInter string.")
+    except KeyError as err:
+        raise ValueError(
+            f"Unknown severity value from DDInter: {raw!r}. "
+            "Add it to _SEVERITY_MAP if this is a valid DDInter string."
+        ) from err
 
 
 # ---------------------------------------------------------------------------
@@ -222,8 +224,8 @@ async def check_pairs(
     )
 
     # Sort for deterministic output (major first, then moderate, minor)
-    _SEVERITY_ORDER = {"major": 0, "moderate": 1, "minor": 2}
-    interactions.sort(key=lambda i: _SEVERITY_ORDER.get(i.severity, 9))
+    severity_order = {"major": 0, "moderate": 1, "minor": 2}
+    interactions.sort(key=lambda i: severity_order.get(i.severity, 9))
 
     logger.info(
         "check_pairs: found %d interaction(s), %d warning(s) for %d drug(s)",

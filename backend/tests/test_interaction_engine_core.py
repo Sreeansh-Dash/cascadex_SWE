@@ -17,13 +17,10 @@ Coverage:
 from __future__ import annotations
 
 import csv
-import os
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 import pytest_asyncio
-from neo4j import AsyncGraphDatabase
 
 from app.services.interaction_engine import (
     InteractionCheckResult,

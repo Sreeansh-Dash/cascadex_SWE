@@ -14,9 +14,8 @@ Covers:
 from __future__ import annotations
 
 import pytest
-import pytest_asyncio
 
-from app.models.interaction import InteractionCheckResult, PairwiseInteraction, UnmatchedDrugWarning
+from app.models.interaction import InteractionCheckResult, PairwiseInteraction
 from app.services import alert_service
 
 # Re-use conftest fixtures: neo4j_driver, client, seed_drug_catalog, register_and_login
@@ -100,7 +99,7 @@ async def test_create_alert_idempotent(neo4j_driver):
         entry_ids = {"D001": "med_e001", "D009": "med_e009"}
 
         # First call
-        created1 = await alert_service.create_alerts_from_check_result(
+        await alert_service.create_alerts_from_check_result(
             session, user_id, check_result, entry_ids
         )
         # Second call with same data
@@ -173,6 +172,7 @@ async def test_acknowledge_alert_sets_acknowledged_at_timestamp(neo4j_driver):
 async def test_view_only_caregiver_cannot_acknowledge(neo4j_driver):
     """View-only caregiver → acknowledge_alert raises 403."""
     from fastapi import HTTPException
+
     from app.models.caregiver import PermissionLevel
 
     async with neo4j_driver.session() as session:

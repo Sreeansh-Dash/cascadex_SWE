@@ -16,10 +16,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-import pytest
-
 from app.services.dose_scheduler import WINDOW_MINUTES, due_reminders
-
 
 # ---------------------------------------------------------------------------
 # Helpers

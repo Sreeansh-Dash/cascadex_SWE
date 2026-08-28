@@ -17,15 +17,12 @@ Test cases:
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from app.models.drug import DrugRead
-from app.models.scan import OcrMatchResult
-from app.services import ocr_match_service
 from app.services.ocr_match_service import _clean_ocr_text, run_ocr_match
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

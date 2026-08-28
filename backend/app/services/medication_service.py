@@ -37,7 +37,7 @@ from datetime import UTC, datetime
 from fastapi import HTTPException, status
 from neo4j import AsyncSession
 
-from app.models.drug import DrugRead
+from app.models.interaction import InteractionCheckResult
 from app.models.medication import (
     DoseLogCreate,
     DoseLogRead,
@@ -47,7 +47,6 @@ from app.models.medication import (
     MedicationRead,
     MedicationUpdate,
 )
-from app.models.interaction import InteractionCheckResult
 from app.services import alert_service, interaction_engine
 
 logger = logging.getLogger(__name__)

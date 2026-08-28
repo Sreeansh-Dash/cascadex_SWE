@@ -25,7 +25,6 @@ from httpx import AsyncClient
 
 from app.services.drug_normalizer import NormalizeResult
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

@@ -7,7 +7,6 @@ AcknowledgeRequest    — empty body for POST /alerts/{id}/acknowledge
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field

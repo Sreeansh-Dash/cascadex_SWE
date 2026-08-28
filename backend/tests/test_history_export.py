@@ -10,6 +10,7 @@ Tests for `GET /api/v1/history/export` endpoint:
 """
 
 import io
+
 import pytest
 from httpx import AsyncClient
 from pypdf import PdfReader

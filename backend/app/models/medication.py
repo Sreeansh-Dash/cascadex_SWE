@@ -26,7 +26,6 @@ from pydantic import BaseModel, ConfigDict, Field
 # Phase 06: direct import needed (Pydantic resolves annotations at runtime)
 from app.models.interaction import InteractionCheckResult  # noqa: F401  (re-exported)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------

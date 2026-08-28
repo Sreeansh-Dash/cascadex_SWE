@@ -24,7 +24,6 @@ from app.main import app
 from app.models.caregiver import PermissionLevel
 from tests.conftest import register_and_login
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -233,7 +232,8 @@ async def test_manage_caregiver_can_add_medication(client: AsyncClient):
     cg_id = link_resp.json()["caregiver_id"]
 
     # Get the primary user's ID from their JWT
-    import base64, json as json_mod
+    import base64
+    import json as json_mod
     token_str = headers_primary["Authorization"].split(" ")[1]
     payload_b64 = token_str.split(".")[1]
     # pad base64 if needed

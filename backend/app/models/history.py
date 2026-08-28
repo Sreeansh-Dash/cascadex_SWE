@@ -10,7 +10,8 @@ Models:
 
 from __future__ import annotations
 
-from typing import Annotated, Literal, Union
+from typing import Annotated, Literal
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -50,7 +51,7 @@ class AlertHistoryEvent(BaseModel):
 
 
 # Discriminated union of timeline events
-HistoryEvent = Annotated[Union[DoseHistoryEvent, AlertHistoryEvent], Field(discriminator="event_type")]
+HistoryEvent = Annotated[DoseHistoryEvent | AlertHistoryEvent, Field(discriminator="event_type")]
 
 
 class HistoryFeedResponse(BaseModel):

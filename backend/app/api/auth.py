@@ -7,6 +7,7 @@ from neo4j import AsyncSession
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
+from app.core.config import settings
 from app.core.dependencies import get_current_user
 from app.db.neo4j_session import get_session
 from app.models.caregiver import CaregiverLinkRequest, CaregiverRead
@@ -21,8 +22,6 @@ from app.models.user import (
     UserRead,
 )
 from app.services import auth_service
-
-from app.core.config import settings
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 limiter = Limiter(key_func=get_remote_address)
