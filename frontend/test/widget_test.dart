@@ -1,32 +1,27 @@
-/// Phase 01 — Flutter widget tests.
-///
-/// Tests:
-/// - The app boots without throwing.
-/// - The onboarding screen renders with the correct AppBar title.
+/// Phase 08 — Main Application Widget Tests.
 library;
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cascadex/main.dart';
+import 'package:cascadex/screens/onboarding_screen.dart';
 
 void main() {
-  group('Phase 01 — Onboarding screen', () {
-    testWidgets('app boots without throwing', (WidgetTester tester) async {
-      await tester.pumpWidget(const CascadeXApp());
+  group('CascadeX App Bootstrap & Routing', () {
+    testWidgets('app boots with ProviderScope without throwing', (WidgetTester tester) async {
+      await tester.pumpWidget(const ProviderScope(child: CascadeXApp()));
+      await tester.pump(const Duration(milliseconds: 200));
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('onboarding screen renders AppBar title', (WidgetTester tester) async {
-      await tester.pumpWidget(const CascadeXApp());
+    testWidgets('unauthenticated user is directed to OnboardingScreen', (WidgetTester tester) async {
+      await tester.pumpWidget(const ProviderScope(child: CascadeXApp()));
+      await tester.pump(const Duration(milliseconds: 300));
 
-      // Verify the onboarding AppBar title is visible.
-      expect(find.text('CascadeX — Onboarding'), findsOneWidget);
-    });
-
-    testWidgets('onboarding screen shows phase placeholder text', (WidgetTester tester) async {
-      await tester.pumpWidget(const CascadeXApp());
-
-      // Verify the placeholder copy is present.
-      expect(find.text('Phase 03 builds this screen'), findsOneWidget);
+      expect(find.byType(OnboardingScreen), findsOneWidget);
+      expect(find.text('CascadeX — Safety Portal'), findsOneWidget);
+      expect(find.text('Sign In'), findsOneWidget);
+      expect(find.text('Create Account'), findsOneWidget);
     });
   });
 }
