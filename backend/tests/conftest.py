@@ -30,7 +30,7 @@ os.environ.setdefault("NEO4J_URI", "bolt://localhost:7687")
 os.environ.setdefault("NEO4J_USER", "neo4j")
 os.environ.setdefault("NEO4J_PASSWORD", "password")
 os.environ.setdefault("JWT_SECRET", "cascadex_jwt_secret_dev_key_not_for_production_32chars")
-os.environ.setdefault("ENV", "test")  # disables rate limiting (see settings.rate_limit_register)
+os.environ["ENV"] = "test"  # force test mode so rate limits stay disabled in tests
 os.environ.setdefault("ALLOWED_ORIGINS", "http://localhost:3000")
 
 from app.db.neo4j_session import init_driver  # noqa: E402
@@ -152,7 +152,7 @@ async def seed_drug_catalog(neo4j_driver):
 
         # Brand names (Phase 04 legacy brands)
         brands = [
-            {"brand_name": "coumadin",  "drug_id": "drug_war01"},
+            {"brand_name": "coumadin",  "drug_id": "D001"},
             {"brand_name": "advil",     "drug_id": "drug_ibu01"},
             {"brand_name": "zocor",     "drug_id": "drug_sim01"},
         ]
