@@ -2,16 +2,17 @@
 Pydantic schemas and enums for Caregiver entities and RBAC permission linkage.
 """
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class PermissionLevel(str, Enum):
+class PermissionLevel(StrEnum):
     """Server-enforced permission levels for linked caregivers."""
 
     VIEW_ONLY = "view_only"
     MANAGE = "manage"
+
 
 
 class CaregiverLinkRequest(BaseModel):

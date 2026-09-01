@@ -18,7 +18,7 @@ Phase 06 adds:
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -34,7 +34,7 @@ from app.models.interaction import InteractionCheckResult  # noqa: F401  (re-exp
 DosageUnit = Literal["mg", "ml", "mcg", "tablet", "capsule", "unit", "drop", "patch", "puff", "spray"]
 
 
-class DoseStatus(str, Enum):
+class DoseStatus(StrEnum):
     """Status of a single dose intake log entry (FR-MED-4)."""
 
     TAKEN = "taken"
@@ -42,11 +42,12 @@ class DoseStatus(str, Enum):
     SKIPPED = "skipped"
 
 
-class InputMethod(str, Enum):
+class InputMethod(StrEnum):
     """How the medication entry was created."""
 
     MANUAL = "manual"
     SCAN = "scan"  # written by Phase 05; field exists now to avoid a migration
+
 
 
 # ---------------------------------------------------------------------------
