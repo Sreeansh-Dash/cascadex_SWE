@@ -30,7 +30,7 @@ os.environ.setdefault("NEO4J_URI", "bolt://localhost:7687")
 os.environ.setdefault("NEO4J_USER", "neo4j")
 os.environ.setdefault("NEO4J_PASSWORD", "password")
 os.environ.setdefault("JWT_SECRET", "cascadex_jwt_secret_dev_key_not_for_production_32chars")
-os.environ.setdefault("ENV", "test")  # disables rate limiting (see settings.rate_limit_register)
+os.environ["ENV"] = "test"  # force test mode so rate limits stay disabled in tests
 os.environ.setdefault("ALLOWED_ORIGINS", "http://localhost:3000")
 
 from app.db.neo4j_session import init_driver  # noqa: E402
