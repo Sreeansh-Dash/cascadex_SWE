@@ -39,6 +39,12 @@ class Settings(BaseSettings):
     # Maximum candidate drugs forwarded to the LLM for fuzzy selection.
     ocr_match_top_k: int = 20
 
+    # Field-level encryption — Phase 09
+    # Must be a URL-safe base64-encoded 32-byte Fernet key.
+    # Generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    # Empty string = no-op passthrough (dev / test only).
+    field_encryption_key: str = ""
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

@@ -19,6 +19,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from neo4j import AsyncSession
 
 from app.core.dependencies import get_current_user
+from app.core.security import decrypt_field, encrypt_field
 from app.db.neo4j_session import get_session
 from app.models.scan import ScanCandidateList, ScanCreate, ScanRecord
 from app.services.ocr_match_service import run_ocr_match
@@ -76,6 +77,9 @@ async def create_scan(
         )
 
     # Persist ScanRecord node in Neo4j (audit trail)
+    # encrypt_field: Fernet-encrypts the raw OCR text at rest.
+    # Passthrough (plaintext) when FIELD_ENCRYPTION_KEY is empty (dev/test).
+    encrypted_ocr = encrypt_field(body.ocr_text)
     await session.run(
         """
         MERGE (u:User {user_id: $user_id})
@@ -94,7 +98,7 @@ async def create_scan(
         """,
         user_id=user_id,
         scan_id=scan_id,
-        ocr_text=body.ocr_text,
+        ocr_text=encrypted_ocr,
         status=scan_status,
         matched_drug_id=(
             match_result.matched_drug.drug_id if match_result.matched_drug else None
@@ -164,4 +168,7 @@ async def get_scan(
 
     data = dict(record)
     data["created_at"] = datetime.fromisoformat(data["created_at"])
+    # decrypt_field: reverses Fernet encryption applied at write time.
+    # Passthrough (identity) when FIELD_ENCRYPTION_KEY is empty.
+    data["ocr_text"] = decrypt_field(data["ocr_text"])
     return ScanRecord(**data)

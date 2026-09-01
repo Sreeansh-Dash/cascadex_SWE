@@ -103,3 +103,71 @@ def hash_otp(otp: str) -> str:
 def verify_otp(otp: str, hashed_otp: str) -> bool:
     """Verify a raw OTP against its hash."""
     return verify_password(otp, hashed_otp)
+
+
+# ---------------------------------------------------------------------------
+# Field-level encryption — Phase 09
+# ---------------------------------------------------------------------------
+
+def _fernet_instance():
+    """Return a Fernet instance configured from settings.field_encryption_key.
+
+    Returns None when the key is empty (dev/test passthrough mode).
+
+    Raises:
+        ValueError: If the key is non-empty but not a valid Fernet key.
+    """
+    key = settings.field_encryption_key.strip()
+    if not key:
+        return None
+    try:
+        from cryptography.fernet import Fernet  # type: ignore[import]
+        return Fernet(key.encode())
+    except Exception as exc:
+        raise ValueError(
+            f"FIELD_ENCRYPTION_KEY is invalid — must be a URL-safe base64-encoded 32-byte Fernet key: {exc}"
+        ) from exc
+
+
+def encrypt_field(plaintext: str) -> str:
+    """Encrypt a sensitive string field for storage in Neo4j.
+
+    When ``settings.field_encryption_key`` is empty (dev/test mode) the
+    plaintext is returned unchanged — encryption is explicitly disabled.
+
+    Applied to: ``ScanRecord.ocr_text`` on write (scans.py).
+
+    Args:
+        plaintext: The raw sensitive string to encrypt.
+
+    Returns:
+        A URL-safe base64 Fernet token string, or the original ``plaintext``
+        if encryption is disabled (no key configured).
+    """
+    fernet = _fernet_instance()
+    if fernet is None:
+        return plaintext  # dev/test passthrough
+    return fernet.encrypt(plaintext.encode()).decode()
+
+
+def decrypt_field(ciphertext: str) -> str:
+    """Decrypt a Fernet-encrypted field read from Neo4j.
+
+    When ``settings.field_encryption_key`` is empty the ciphertext (which is
+    actually plaintext in passthrough mode) is returned unchanged.
+
+    Args:
+        ciphertext: A Fernet token string produced by ``encrypt_field``.
+
+    Returns:
+        The original plaintext string.
+
+    Raises:
+        cryptography.fernet.InvalidToken: If the token is corrupted or the
+            wrong key is used.
+    """
+    fernet = _fernet_instance()
+    if fernet is None:
+        return ciphertext  # dev/test passthrough
+    return fernet.decrypt(ciphertext.encode()).decode()
+

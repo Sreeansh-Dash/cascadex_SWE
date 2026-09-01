@@ -47,6 +47,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Dependency audit (pip-audit)
+        # Fails the build on known CRITICAL/HIGH CVEs in installed packages.
+        # New vulnerabilities surfaced here should be resolved before merging.
+        run: pip install pip-audit && pip-audit --requirement requirements.txt --skip-editable
+
       - name: Lint with ruff
         run: ruff check .
 
@@ -58,6 +63,8 @@ jobs:
           NEO4J_PASSWORD: test_password
           JWT_SECRET: test_jwt_secret_for_ci
           ENV: dev
+          # GEMINI_API_KEY: optional — live LLM tests are skipped when absent
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
   # ---------------------------------------------------------------------------
   # Job 2: Frontend — analyze + test
@@ -91,4 +98,8 @@ jobs:
 
       - name: Run widget tests
         run: flutter test
+
+      - name: Check for outdated Flutter dependencies (informational)
+        # Not a build failure — surfaces upgrade candidates for the maintainer.
+        run: flutter pub outdated || true
 

@@ -34,6 +34,9 @@ services:
       JWT_SECRET: ${JWT_SECRET:-change_me_in_dev}
       ENV: ${ENV:-dev}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8080}
+      # Phase 09: AI / encryption secrets (leave empty for stub/dev mode)
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      FIELD_ENCRYPTION_KEY: ${FIELD_ENCRYPTION_KEY:-}
     depends_on:
       neo4j:
         condition: service_healthy
@@ -46,6 +49,37 @@ services:
     restart: unless-stopped
     volumes:
       - ./backend:/app   # hot-reload in dev; remove in production
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Seeder — one-shot service that loads DDInter fixture data into Neo4j.
+  #
+  # Usage:
+  #   docker compose --profile seed up seeder   # seed with fixture data
+  #   docker compose up                          # normal dev (no seeding)
+  #
+  # The seeder runs ONCE and exits (restart: "no").  It is safe to re-run:
+  # seed_ddinter.py uses MERGE, so it is fully idempotent.
+  # ─────────────────────────────────────────────────────────────────────────
+  seeder:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cascadex_seeder
+    profiles:
+      - seed
+    entrypoint: >
+      python -m data.seed_ddinter
+        --source /app/data/fixtures
+        --version ddinter-fixture-v1
+        --neo4j-uri bolt://neo4j:7687
+        --neo4j-user neo4j
+        --neo4j-password ${NEO4J_PASSWORD:-password}
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    restart: "no"
+    volumes:
+      - ./backend:/app
 
 volumes:
   neo4j_data:
