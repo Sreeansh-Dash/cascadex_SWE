@@ -152,7 +152,7 @@ async def seed_drug_catalog(neo4j_driver):
 
         # Brand names (Phase 04 legacy brands)
         brands = [
-            {"brand_name": "coumadin",  "drug_id": "drug_war01"},
+            {"brand_name": "coumadin",  "drug_id": "D001"},
             {"brand_name": "advil",     "drug_id": "drug_ibu01"},
             {"brand_name": "zocor",     "drug_id": "drug_sim01"},
         ]
