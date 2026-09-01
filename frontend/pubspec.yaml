@@ -54,7 +54,7 @@ dev_dependencies:
   flutter_lints: ^4.0.0
 
   # Phase 05: HTTP mock for widget tests (http package includes MockClient)
-  mockito: ^5.4.4
+  mockito: ^5.8.1
 
 flutter:
   uses-material-design: true
