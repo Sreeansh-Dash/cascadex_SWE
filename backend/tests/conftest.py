@@ -24,13 +24,14 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from neo4j import AsyncGraphDatabase
 
-# Set environment variables BEFORE importing app (config reads at import time)
-os.environ["NEO4J_URI"] = "bolt://localhost:7687"
-os.environ["NEO4J_USER"] = "neo4j"
-os.environ["NEO4J_PASSWORD"] = "password"
-os.environ["JWT_SECRET"] = "cascadex_jwt_secret_dev_key_not_for_production_32chars"
-os.environ["ENV"] = "test"  # disables rate limiting (see settings.rate_limit_register)
-os.environ["ALLOWED_ORIGINS"] = "http://localhost:3000"
+# Set environment defaults BEFORE importing app (config reads at import time)
+# Using setdefault ensures CI-provided environment variables (like NEO4J_PASSWORD=test_password) are not overwritten.
+os.environ.setdefault("NEO4J_URI", "bolt://localhost:7687")
+os.environ.setdefault("NEO4J_USER", "neo4j")
+os.environ.setdefault("NEO4J_PASSWORD", "password")
+os.environ.setdefault("JWT_SECRET", "cascadex_jwt_secret_dev_key_not_for_production_32chars")
+os.environ.setdefault("ENV", "test")  # disables rate limiting (see settings.rate_limit_register)
+os.environ.setdefault("ALLOWED_ORIGINS", "http://localhost:3000")
 
 from app.db.neo4j_session import init_driver  # noqa: E402
 from app.main import app  # noqa: E402
