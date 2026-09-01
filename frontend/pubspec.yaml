@@ -51,7 +51,7 @@ dev_dependencies:
   build_runner: ^2.4.9
 
   # Linting
-  flutter_lints: ^4.0.0
+  flutter_lints: ^6.0.0
 
   # Phase 05: HTTP mock for widget tests (http package includes MockClient)
   mockito: ^5.4.4
