@@ -14,6 +14,7 @@ import 'package:flutter/foundation.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'api_client.dart';
 
 /// Result returned by [OcrService.extractAndMatch].
 class OcrScanResult {
@@ -29,10 +30,10 @@ class OcrScanResult {
   /// Best single candidate from the backend pipeline, or `null`.
   final Map<String, dynamic>? primaryMatch;
 
-  /// All candidate drugs returned by the backend.
+  /// Up to 3 candidates for the user to pick from on confirmation screen.
   final List<Map<String, dynamic>> candidates;
 
-  /// Human-readable hint for the confirmation screen.
+  /// Explanation message for the user.
   final String message;
 
   const OcrScanResult({
@@ -55,8 +56,8 @@ class OcrService {
 
   OcrService({
     required this.accessToken,
-    this.baseUrl = 'http://10.0.2.2:8000/api/v1', // Android emulator default
-  });
+    String? baseUrl,
+  }) : baseUrl = baseUrl ?? ApiClient.defaultBaseUrl;
 
   /// Extract text from [imagePath] using ML Kit, then submit to `POST /scans`.
   ///

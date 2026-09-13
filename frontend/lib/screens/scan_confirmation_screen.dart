@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../services/api_client.dart';
 import '../services/ocr_service.dart';
 
 /// Called after user taps "Confirm & Add".
@@ -23,6 +24,7 @@ typedef OnMedicationAdded = void Function(String drugId);
 class ScanConfirmationScreen extends StatefulWidget {
   final OcrScanResult scanResult;
   final String accessToken;
+  final String? baseUrl;
 
   /// Optional callback invoked when the user successfully adds a medication.
   final OnMedicationAdded? onMedicationAdded;
@@ -31,6 +33,7 @@ class ScanConfirmationScreen extends StatefulWidget {
     super.key,
     required this.scanResult,
     required this.accessToken,
+    this.baseUrl,
     this.onMedicationAdded,
   });
 
@@ -45,7 +48,7 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
   String? _errorMessage;
   bool _added = false;
 
-  String get _baseUrl => 'http://10.0.2.2:8000/api/v1';
+  String get _baseUrl => widget.baseUrl ?? ApiClient.defaultBaseUrl;
 
   @override
   void initState() {
