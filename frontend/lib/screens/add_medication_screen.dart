@@ -302,6 +302,7 @@ class _AddMedicationScreenState extends ConsumerState<AddMedicationScreen> {
                     Expanded(
                       flex: 2,
                       child: DropdownButtonFormField<String>(
+                        // ignore: deprecated_member_use
                         value: _selectedUnit,
                         decoration: const InputDecoration(
                           labelText: 'Unit',

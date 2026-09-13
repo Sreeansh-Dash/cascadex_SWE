@@ -147,7 +147,7 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
               child: Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceVariant,
+                  color: colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -442,7 +442,7 @@ class _CandidateTile extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected
                 ? colorScheme.primaryContainer
-                : colorScheme.surfaceVariant,
+                : colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected ? colorScheme.primary : Colors.transparent,
@@ -476,7 +476,7 @@ class _CandidateTile extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13,
                           color: isSelected
-                              ? colorScheme.onPrimaryContainer.withOpacity(0.8)
+                              ? colorScheme.onPrimaryContainer.withValues(alpha: 0.8)
                               : colorScheme.onSurfaceVariant,
                         ),
                       ),

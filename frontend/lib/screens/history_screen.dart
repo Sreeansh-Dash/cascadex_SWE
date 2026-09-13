@@ -217,7 +217,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           borderRadius: BorderRadius.circular(12),
           side: const BorderSide(color: AppColors.severityMajor, width: 1.5),
         ),
-        color: AppColors.severityMajorBg.withOpacity(0.4),
+        color: AppColors.severityMajorBg.withValues(alpha: 0.4),
         child: ListTile(
           leading: const Icon(Icons.warning_rounded, color: AppColors.severityMajor, size: 36),
           title: Text(

@@ -14,6 +14,14 @@ Safety contract (non-negotiable):
 Stub-mode behaviour (no API key):
 - ``match_drug_name``: uses ``difflib.get_close_matches`` (cutoff 0.6).
 - ``plain_language_rewrite``: returns the original string unchanged.
+
+SDK migration note:
+    The legacy ``google-generativeai`` package (EOL Nov 2025) has been replaced
+    by the unified ``google-genai`` SDK.  The new entry point is::
+
+        from google import genai
+        client = genai.Client(api_key=...)
+        response = client.models.generate_content(model=..., contents=...)
 """
 
 from __future__ import annotations
@@ -25,27 +33,33 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+# Current stable Gemini model in the new SDK
+_GEMINI_MODEL = "gemini-2.0-flash"
+
 
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-def _gemini_model():
-    """Return a configured Gemini GenerativeModel, or None in stub mode."""
+def _gemini_client():
+    """Return a configured Gemini Client, or None in stub mode.
+
+    Uses the new ``google-genai`` unified SDK.  Returns None when no API key
+    is configured — callers fall back to deterministic stub behaviour.
+    """
     if not settings.gemini_api_key:
         return None
     try:
-        import google.generativeai as genai  # type: ignore[import]
+        from google import genai  # type: ignore[import]
 
-        genai.configure(api_key=settings.gemini_api_key)
-        return genai.GenerativeModel("gemini-1.5-flash")
+        return genai.Client(api_key=settings.gemini_api_key)
     except ImportError:
         logger.warning(
-            "google-generativeai package not installed — LLM features disabled (stub mode)"
+            "google-genai package not installed — LLM features disabled (stub mode)"
         )
         return None
     except Exception as exc:
-        logger.warning("Gemini initialisation failed: %s — stub mode active", exc)
+        logger.warning("Gemini client initialisation failed: %s — stub mode active", exc)
         return None
 
 
@@ -94,8 +108,8 @@ def match_drug_name(ocr_text: str, candidates: list[str]) -> str | None:
         return candidates[idx]
 
     # ── Stage 2: Gemini fuzzy match ─────────────────────────────────────────
-    model = _gemini_model()
-    if model is None:
+    client = _gemini_client()
+    if client is None:
         logger.debug("match_drug_name: stub mode — no match for '%s'", ocr_text)
         return None
 
@@ -110,7 +124,7 @@ def match_drug_name(ocr_text: str, candidates: list[str]) -> str | None:
     )
 
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(model=_GEMINI_MODEL, contents=prompt)
         raw = response.text.strip()
         if raw == "NO_MATCH":
             logger.info("match_drug_name: LLM → NO_MATCH for '%s'", ocr_text)
@@ -149,8 +163,8 @@ def plain_language_rewrite(mechanism: str) -> str:
     if not mechanism or not mechanism.strip():
         return mechanism
 
-    model = _gemini_model()
-    if model is None:
+    client = _gemini_client()
+    if client is None:
         return mechanism  # stub: return original
 
     prompt = (
@@ -160,7 +174,7 @@ def plain_language_rewrite(mechanism: str) -> str:
         f"Mechanism: {mechanism}\n\nPlain English:"
     )
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(model=_GEMINI_MODEL, contents=prompt)
         rewritten = response.text.strip()
         return rewritten if rewritten else mechanism
     except Exception as exc:

@@ -15,7 +15,8 @@ dependencies:
   flutter_riverpod: ^2.5.1
 
   # Secure token storage (never SharedPreferences)
-  flutter_secure_storage: ^9.2.2
+  # Bumped from ^9.2.2 → ^10.0.0 (safe Android migration step before v11)
+  flutter_secure_storage: ^10.0.0
 
   # Local cache (offline-first medication list)
   hive: ^2.2.3
@@ -35,7 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # Phase 05: OCR — on-device ML Kit text recognition (no cloud calls)
-  google_mlkit_text_recognition: ^0.13.0
+  # Bumped from ^0.13.0 → ^0.17.1
+  google_mlkit_text_recognition: ^0.17.1
 
   # Phase 05: Camera capture
   image_picker: ^1.1.2
@@ -47,13 +49,17 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  # Code generation
-  build_runner: ^2.4.9
+  # Code generation — bumped to ^2.15.1 (last version compatible with
+  # current Flutter SDK meta 1.18.0 pin; bump to ^2.16.0 after flutter upgrade)
+  build_runner: ^2.15.1
 
-  # Linting
-  flutter_lints: ^4.0.0
+  # Linting — bumped from ^4.0.0 → ^5.0.0
+  flutter_lints: ^5.0.0
 
   # Phase 05: HTTP mock for widget tests (http package includes MockClient)
+  # Pinned at ^5.4.4 — mockito ^5.8.1 requires meta ^1.18.3 which conflicts
+  # with the current Flutter SDK's pinned meta 1.18.0.  Re-evaluate after
+  # running `flutter upgrade`.
   mockito: ^5.4.4
 
 flutter:

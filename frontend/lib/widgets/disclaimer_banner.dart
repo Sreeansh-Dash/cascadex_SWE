@@ -35,7 +35,7 @@ class DisclaimerBanner extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.severityMajorBg,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.severityMajor.withOpacity(0.4), width: 1),
+          border: Border.all(color: AppColors.severityMajor.withValues(alpha: 0.4), width: 1),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
