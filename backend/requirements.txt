@@ -35,7 +35,7 @@ ruff>=0.6.9
 
 # Phase 08: PDF export (history)
 reportlab>=4.2.5
-pypdf>=6.16.2
+pypdf>=6.18.0
 
 # Phase 09: LLM (Gemini API) + field-level encryption
 # Migrated from deprecated google-generativeai (EOL Nov 2025) to google-genai (new unified SDK)
