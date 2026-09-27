@@ -35,10 +35,18 @@ class ApiClient {
   final SecureStorageService secureStorage;
 
   static String get defaultBaseUrl {
+    // Override at build time: flutter build apk --dart-define=API_BASE_URL=https://your-service.onrender.com/api/v1
     const fromEnv = String.fromEnvironment('API_BASE_URL');
     if (fromEnv.isNotEmpty) return fromEnv;
-    if (kIsWeb) return 'http://localhost:8000/api/v1';
-    if (Platform.isAndroid) return 'http://10.0.2.2:8000/api/v1';
+
+    // Production fallback — replace with your actual Render service URL
+    const renderUrl = String.fromEnvironment(
+      'RENDER_URL',
+      defaultValue: 'https://cascadex-backend.onrender.com/api/v1',
+    );
+
+    if (kIsWeb) return renderUrl;
+    if (Platform.isAndroid) return 'http://10.0.2.2:8000/api/v1'; // emulator → localhost
     return 'http://localhost:8000/api/v1';
   }
 
