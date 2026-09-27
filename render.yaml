@@ -1,0 +1,56 @@
+# render.yaml — CascadeX Backend Deployment on Render
+# Docs: https://render.com/docs/yaml-spec
+
+services:
+  - type: web
+    name: cascadex-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free                    # upgrade to starter ($7/mo) for production
+    region: oregon                # or: singapore, frankfurt, ohio, virginia
+
+    # Health check — Render will restart the service if this fails
+    healthCheckPath: /health
+
+    # Environment variables — set secrets in the Render dashboard, not here
+    envVars:
+      # -- Neo4j AuraDB (set these in Render dashboard) ----------------------
+      - key: NEO4J_URI
+        sync: false               # set in dashboard: neo4j+s://<id>.databases.neo4j.io
+
+      - key: NEO4J_USER
+        value: neo4j              # AuraDB default username
+
+      - key: NEO4J_PASSWORD
+        sync: false               # set in dashboard: your AuraDB password
+
+      # -- Auth --------------------------------------------------------------
+      - key: JWT_SECRET
+        generateValue: true       # Render auto-generates a secure random value
+
+      - key: JWT_ALGORITHM
+        value: HS256
+
+      - key: JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "15"
+
+      - key: JWT_REFRESH_TOKEN_EXPIRE_DAYS
+        value: "7"
+
+      # -- App ---------------------------------------------------------------
+      - key: ENV
+        value: production
+
+      - key: ALLOWED_ORIGINS
+        value: "*"                # tighten after you have a fixed Render URL
+
+      # -- AI / Encryption (set in dashboard) --------------------------------
+      - key: GEMINI_API_KEY
+        sync: false               # optional -- leave blank for stub/difflib mode
+
+      - key: FIELD_ENCRYPTION_KEY
+        sync: false               # generate: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+
+      - key: OCR_MATCH_TOP_K
+        value: "20"

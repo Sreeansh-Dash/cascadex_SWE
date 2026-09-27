@@ -9,8 +9,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Expose FastAPI port
-EXPOSE 8000
+# Render injects $PORT dynamically; default to 8000 for local Docker usage
+ENV PORT=8000
 
-# Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+EXPOSE $PORT
+
+# Production: no --reload; use shell form so $PORT expands correctly
+CMD uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 2
