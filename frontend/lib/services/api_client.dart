@@ -229,7 +229,7 @@ class ApiClient {
   }) async {
     try {
       final res = await dio.post(
-        '/auth/caregivers',
+        '/auth/caregivers/link',
         data: {
           'caregiver_email_or_phone': caregiverEmailOrPhone,
           'permission_level': permissionLevel,

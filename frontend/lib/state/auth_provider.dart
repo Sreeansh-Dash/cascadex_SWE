@@ -8,10 +8,33 @@
 /// - Logout & session cleanup
 library;
 
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/api_client.dart';
 import '../services/secure_storage.dart';
+
+/// Decode a JWT token and return its payload as a Map.
+/// The JWT payload is the second dot-separated base64url segment.
+Map<String, dynamic> _decodeJwtPayload(String token) {
+  final parts = token.split('.');
+  if (parts.length != 3) throw const FormatException('Invalid JWT structure');
+  // base64url → base64 padding
+  String normalized = parts[1].replaceAll('-', '+').replaceAll('_', '/');
+  switch (normalized.length % 4) {
+    case 2:
+      normalized += '==';
+      break;
+    case 3:
+      normalized += '=';
+      break;
+    default:
+      break;
+  }
+  final decoded = utf8.decode(base64.decode(normalized));
+  return json.decode(decoded) as Map<String, dynamic>;
+}
 
 class AuthState {
   final bool isLoading;
@@ -99,8 +122,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       final accessToken = data['access_token'] as String;
       final refreshToken = data['refresh_token'] as String;
-      final userId = data['user_id'] as String;
-      final role = data['role'] as String? ?? 'user';
+
+      // The backend's TokenPair does not include user_id/role directly.
+      // Decode them from the JWT access token payload (sub = account_id, role = role).
+      final payload = _decodeJwtPayload(accessToken);
+      final userId = payload['sub'] as String? ?? '';
+      final role = payload['role'] as String? ?? 'user';
 
       await _secureStorage.saveAuthTokens(
         accessToken: accessToken,
