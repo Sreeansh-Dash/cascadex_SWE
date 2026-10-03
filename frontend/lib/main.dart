@@ -28,6 +28,12 @@ import 'theme/typography.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    debugPrint('Uncaught Flutter Error: ${details.exception}');
+  };
+
   runApp(const ProviderScope(child: CascadeXApp()));
 }
 
