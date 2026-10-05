@@ -258,8 +258,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
           TextButton(
             onPressed: () {
               // demo quick-fill
-              _loginIdentifierController.text = 'patient@cascadex.test';
-              _loginPasswordController.text = 'Password123!';
+              _loginIdentifierController.text = 'demo@cascadex.app';
+              _loginPasswordController.text = 'Demo_Pass_123!';
             },
             child: const Text('Fill Demo Credentials', style: TextStyle(fontSize: 14)),
           ),

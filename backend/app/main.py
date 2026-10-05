@@ -13,8 +13,10 @@ All configuration is loaded from environment variables via app.core.config.
 import logging
 import logging.config
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from neo4j.exceptions import ServiceUnavailable
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
@@ -56,6 +58,20 @@ app = FastAPI(
 # ---------------------------------------------------------------------------
 app.state.limiter = auth.limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+@app.exception_handler(ServiceUnavailable)
+async def neo4j_unavailable_handler(request: Request, exc: ServiceUnavailable) -> JSONResponse:
+    """Return an actionable API error when the configured database is offline."""
+    return JSONResponse(
+        status_code=503,
+        content={
+            "detail": {
+                "code": "database_unavailable",
+                "message": "The CascadeX database is unavailable. Please try again later.",
+            }
+        },
+    )
 
 # ---------------------------------------------------------------------------
 # Middleware — NOTE: Starlette is LIFO (last added = outermost = runs first).
