@@ -58,20 +58,30 @@ app.state.limiter = auth.limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ---------------------------------------------------------------------------
-# CORS
+# Middleware — NOTE: Starlette is LIFO (last added = outermost = runs first).
+# Execution order on each request: CORS → Logging → SlowAPI → routes
 # ---------------------------------------------------------------------------
+
+# 1. SlowAPI — innermost, runs just before route handlers (sets rate-limit state)
+app.add_middleware(SlowAPIMiddleware)
+
+# 2. Logging — structured PII-free request/response logging
+app.add_middleware(LoggingMiddleware)
+
+# 3. CORS — outermost so it handles OPTIONS preflight immediately,
+#    before SlowAPI or Logging can interfere with the request.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins_list,
+    allow_origin_regex=(
+        r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"
+        if settings.is_dev
+        else None
+    ),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# LoggingMiddleware: structured PII-free request/response logging
-app.add_middleware(LoggingMiddleware)
-# SlowAPIMiddleware MUST come after CORSMiddleware so the rate-limit state
-# (request.state.view_rate_limit) is set before route handlers run.
-app.add_middleware(SlowAPIMiddleware)
 
 # ---------------------------------------------------------------------------
 # API routers — all versioned under /api/v1/
