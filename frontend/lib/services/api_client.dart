@@ -45,7 +45,8 @@ class ApiClient {
       defaultValue: 'https://cascadex-backend.onrender.com/api/v1',
     );
 
-    if (kIsWeb) return renderUrl;
+    // For local web testing use localhost; in production use the Render URL
+    if (kIsWeb) return 'http://localhost:8000/api/v1';
     if (Platform.isAndroid) return 'http://10.0.2.2:8000/api/v1'; // emulator → localhost
     return 'http://localhost:8000/api/v1';
   }
