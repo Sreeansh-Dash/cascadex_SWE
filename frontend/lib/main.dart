@@ -13,6 +13,7 @@ import 'package:go_router/go_router.dart';
 
 import 'screens/about_data_screen.dart';
 import 'screens/add_medication_screen.dart';
+import 'screens/alerts_screen.dart';
 import 'screens/alert_detail_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/medication_list_screen.dart';
@@ -91,6 +92,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             accessToken: token,
           );
         },
+      ),
+      GoRoute(
+        path: '/alerts',
+        builder: (context, state) => const AlertsScreen(),
       ),
       GoRoute(
         path: '/alerts/detail',

@@ -25,7 +25,8 @@ class MedicationListScreen extends ConsumerStatefulWidget {
   const MedicationListScreen({super.key});
 
   @override
-  ConsumerState<MedicationListScreen> createState() => _MedicationListScreenState();
+  ConsumerState<MedicationListScreen> createState() =>
+      _MedicationListScreenState();
 }
 
 class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
@@ -52,7 +53,9 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(status == 'taken' ? 'Dose logged as TAKEN ✅' : 'Dose logged as SKIPPED ⏸️'),
+          content: Text(status == 'taken'
+              ? 'Dose logged as TAKEN ✅'
+              : 'Dose logged as SKIPPED ⏸️'),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -68,7 +71,8 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('My Medications', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('My Medications',
+            style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -89,23 +93,17 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
                       ),
                       child: Text(
                         '${unackedAlerts.length}',
-                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
               ],
             ),
             tooltip: 'View Alerts (${unackedAlerts.length} active)',
-            onPressed: () {
-              if (unackedAlerts.isNotEmpty) {
-                final firstAlert = unackedAlerts.first;
-                context.push('/alerts/detail', extra: firstAlert);
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('No active unacknowledged alerts')),
-                );
-              }
-            },
+            onPressed: () => context.push('/alerts'),
           ),
           IconButton(
             icon: const Icon(Icons.history_outlined, size: 28),
@@ -124,27 +122,31 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add, size: 26),
-        label: const Text('Add Medication', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        label: const Text('Add Medication',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
       ),
       body: SafeArea(
         child: Column(
           children: [
             if (medState.isOffline)
               OfflineBanner(
-                onRetry: () => ref.read(medicationProvider.notifier).loadMedications(),
+                onRetry: () =>
+                    ref.read(medicationProvider.notifier).loadMedications(),
               ),
 
             // Top Alert Notice Bar if major unacknowledged alerts exist
             if (unackedAlerts.isNotEmpty)
               InkWell(
-                onTap: () => context.push('/alerts/detail', extra: unackedAlerts.first),
+                onTap: () => context.push('/alerts'),
                 child: Container(
                   width: double.infinity,
                   color: AppColors.severityMajorBg,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   child: Row(
                     children: [
-                      const Icon(Icons.warning_rounded, color: AppColors.severityMajor, size: 24),
+                      const Icon(Icons.warning_rounded,
+                          color: AppColors.severityMajor, size: 24),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -174,7 +176,9 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
                   ? const Center(child: CircularProgressIndicator())
                   : RefreshIndicator(
                       onRefresh: () async {
-                        await ref.read(medicationProvider.notifier).loadMedications();
+                        await ref
+                            .read(medicationProvider.notifier)
+                            .loadMedications();
                         await ref.read(alertProvider.notifier).loadAlerts();
                       },
                       child: ListView(
@@ -197,7 +201,8 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
                               ),
                               TextButton.icon(
                                 onPressed: () => context.push('/scan'),
-                                icon: const Icon(Icons.camera_alt_outlined, size: 18),
+                                icon: const Icon(Icons.camera_alt_outlined,
+                                    size: 18),
                                 label: const Text('Scan Bottle'),
                               ),
                             ],
@@ -208,7 +213,8 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
                             _buildEmptyState()
                           else
                             ...medState.activeMedications.map(
-                              (med) => _buildMedicationCard(med, alertState.alerts),
+                              (med) =>
+                                  _buildMedicationCard(med, alertState.alerts),
                             ),
 
                           const SizedBox(height: 24),
@@ -219,17 +225,22 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
                               contentPadding: EdgeInsets.zero,
                               title: Text(
                                 'Inactive / Past Medications (${medState.inactiveMedications.length})',
-                                style: AppText.subhead.copyWith(color: AppColors.textMuted),
+                                style: AppText.subhead
+                                    .copyWith(color: AppColors.textMuted),
                               ),
                               trailing: Icon(
-                                _showInactive ? Icons.expand_less : Icons.expand_more,
+                                _showInactive
+                                    ? Icons.expand_less
+                                    : Icons.expand_more,
                                 color: AppColors.textMuted,
                               ),
-                              onTap: () => setState(() => _showInactive = !_showInactive),
+                              onTap: () => setState(
+                                  () => _showInactive = !_showInactive),
                             ),
                             if (_showInactive)
                               ...medState.inactiveMedications.map(
-                                (med) => _buildMedicationCard(med, [], isInactive: true),
+                                (med) => _buildMedicationCard(med, [],
+                                    isInactive: true),
                               ),
                           ],
 
@@ -254,7 +265,8 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
       ),
       child: Column(
         children: [
-          const Icon(Icons.medication_outlined, size: 64, color: AppColors.primary),
+          const Icon(Icons.medication_outlined,
+              size: 64, color: AppColors.primary),
           const SizedBox(height: 12),
           const Text('No Active Medications', style: AppText.headline),
           const SizedBox(height: 6),
@@ -285,7 +297,8 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
     bool isInactive = false,
   }) {
     final entryId = med['entry_id'] as String;
-    final genericName = (med['generic_name'] as String? ?? 'Medication').toUpperCase();
+    final genericName =
+        (med['generic_name'] as String? ?? 'Medication').toUpperCase();
     final dosageAmount = med['dosage_amount'];
     final dosageUnit = med['dosage_unit'] ?? '';
     final drugClass = med['drug_class'] as String? ?? '';
@@ -301,7 +314,11 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
       final eB = a['entry_b_id']?.toString();
       final ack = a['acknowledged'] == true;
 
-      if (!ack && (eA == entryId || eB == entryId || drugA == gName || drugB == gName)) {
+      if (!ack &&
+          (eA == entryId ||
+              eB == entryId ||
+              drugA == gName ||
+              drugB == gName)) {
         matchedAlert = a;
         break;
       }
@@ -315,7 +332,8 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
-          color: severity != null ? AppColors.severityMajor : AppColors.cardBorder,
+          color:
+              severity != null ? AppColors.severityMajor : AppColors.cardBorder,
           width: severity != null ? 1.5 : 1,
         ),
       ),
@@ -336,21 +354,26 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
                         genericName,
                         style: AppText.headline.copyWith(
                           fontSize: 19,
-                          color: isInactive ? AppColors.textMuted : AppColors.textPrimary,
+                          color: isInactive
+                              ? AppColors.textMuted
+                              : AppColors.textPrimary,
                         ),
                       ),
                       if (drugClass.isNotEmpty)
                         Text(
                           drugClass,
-                          style: AppText.caption.copyWith(color: AppColors.primary),
+                          style: AppText.caption
+                              .copyWith(color: AppColors.primary),
                         ),
                     ],
                   ),
                 ),
                 if (severity != null)
                   InkWell(
-                    onTap: () => context.push('/alerts/detail', extra: matchedAlert),
-                    child: SeverityBadge(rawSeverity: severity, isCompact: true),
+                    onTap: () =>
+                        context.push('/alerts/detail', extra: matchedAlert),
+                    child:
+                        SeverityBadge(rawSeverity: severity, isCompact: true),
                   ),
               ],
             ),
@@ -360,7 +383,8 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: AppColors.primaryLight,
                     borderRadius: BorderRadius.circular(8),
@@ -368,7 +392,8 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.scale_outlined, size: 16, color: AppColors.primaryDark),
+                      const Icon(Icons.scale_outlined,
+                          size: 16, color: AppColors.primaryDark),
                       const SizedBox(width: 6),
                       Text(
                         '$dosageAmount $dosageUnit',
@@ -405,7 +430,8 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
                     label: const Text('Skip'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.textSecondary,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 8),
                     ),
                   ),
                   ElevatedButton.icon(
@@ -415,7 +441,8 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.success,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 8),
                     ),
                   ),
                 ],
