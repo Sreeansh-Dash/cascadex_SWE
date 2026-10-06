@@ -7,7 +7,6 @@
 /// - Comprehensive typed API methods for all Phase 03-08 endpoints
 library;
 
-import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
@@ -45,11 +44,10 @@ class ApiClient {
       defaultValue: 'https://cascadex-backend.onrender.com/api/v1',
     );
 
-    // Use the deployed API for web builds; local web testing can override this
-    // with --dart-define=API_BASE_URL=http://localhost:8000/api/v1.
-    if (kIsWeb) return renderUrl;
-    if (Platform.isAndroid) return 'http://10.0.2.2:8000/api/v1'; // emulator → localhost
-    return 'http://localhost:8000/api/v1';
+    // Use the deployed API by default so physical devices can reach it.
+    // Local or emulator testing can override this with:
+    // --dart-define=API_BASE_URL=http://10.0.2.2:8000/api/v1
+    return renderUrl;
   }
 
   ApiClient({
