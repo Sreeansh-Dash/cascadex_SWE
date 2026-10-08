@@ -68,7 +68,8 @@ class OcrService {
   Future<OcrScanResult> extractAndMatch(String imagePath) async {
     // ── Step 1: On-device OCR ─────────────────────────────────────────────
     final rawText = await _runMlKitOcr(imagePath);
-    debugPrint('OcrService: extracted text="${rawText.substring(0, rawText.length.clamp(0, 80))}..."');
+    final previewLength = rawText.length > 80 ? 80 : rawText.length;
+    debugPrint('OcrService: extracted text="${rawText.substring(0, previewLength)}..."');
 
     if (rawText.trim().isEmpty) {
       // No text found — return gracefully so the UI can show a retry prompt.

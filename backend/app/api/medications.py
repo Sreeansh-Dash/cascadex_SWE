@@ -6,6 +6,7 @@ Endpoints:
     POST /medications                        — Add medication for authenticated user
     GET  /medications                        — List active (+ optionally inactive) medications
     PATCH /medications/{entry_id}            — Edit or deactivate a medication
+    DELETE /medications/{entry_id}           — Permanently remove a medication
     POST /medications/{entry_id}/doses       — Log a dose intake event
     GET  /medications/{entry_id}/doses       — List dose logs for an entry
 
@@ -112,6 +113,22 @@ async def update_medication(
 ) -> MedicationRead:
     user_id: str = auth_context["user_id"]
     return await medication_service.update_medication(session, user_id=user_id, entry_id=entry_id, payload=payload)
+
+
+@router.delete(
+    "/medications/{entry_id}",
+    status_code=204,
+    summary="Delete a medication",
+    description="Permanently remove a medication and its schedules and dose logs.",
+)
+async def delete_medication(
+    entry_id: str,
+    auth_context: Annotated[dict, Depends(require_permission(PermissionLevel.MANAGE))],
+    session: AsyncSession = Depends(get_session),
+) -> None:
+    await medication_service.delete_medication(
+        session, user_id=auth_context["user_id"], entry_id=entry_id
+    )
 
 
 # ---------------------------------------------------------------------------

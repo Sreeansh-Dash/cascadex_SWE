@@ -21,7 +21,7 @@ class OfflineBanner extends StatelessWidget {
           const SizedBox(width: 10),
           const Expanded(
             child: Text(
-              'Offline mode — using cached medical data. Changes will sync once reconnected.',
+              'Using saved data while we reconnect. Your changes will sync when you are online.',
               style: TextStyle(
                 color: AppColors.offlineText,
                 fontSize: 13,
@@ -36,7 +36,7 @@ class OfflineBanner extends StatelessWidget {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
               ),
-              child: const Text('RETRY', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text('Retry connection', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
         ],
       ),

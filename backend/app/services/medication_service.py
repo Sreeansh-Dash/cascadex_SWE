@@ -570,6 +570,31 @@ async def update_medication(
     return updated
 
 
+async def delete_medication(
+    session: AsyncSession,
+    user_id: str,
+    entry_id: str,
+) -> None:
+    """Permanently remove an owned medication and its dependent records."""
+    result = await session.run(
+        """
+        MATCH (u:User {user_id: $user_id})-[:HAS_MEDICATION]->(me:MedicationEntry {entry_id: $entry_id})
+        OPTIONAL MATCH (me)-[:HAS_SCHEDULE|HAS_DOSE_LOG]->(dependent)
+        WITH u, me, collect(dependent) AS dependents
+        FOREACH (node IN dependents | DETACH DELETE node)
+        DETACH DELETE me
+        RETURN count(me) AS deleted
+        """,
+        {"user_id": user_id, "entry_id": entry_id},
+    )
+    record = await result.single()
+    if not record or record["deleted"] == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"code": "medication_not_found", "message": "Medication entry not found or access denied"},
+        )
+
+
 # ---------------------------------------------------------------------------
 # Dose logging
 # ---------------------------------------------------------------------------

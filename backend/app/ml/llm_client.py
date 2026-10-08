@@ -168,9 +168,9 @@ def plain_language_rewrite(mechanism: str) -> str:
         return mechanism  # stub: return original
 
     prompt = (
-        "Rewrite the following drug interaction mechanism in plain English "
-        "for an elderly patient with no medical training. "
-        "Keep it to 1–2 sentences. Do NOT add warnings or advice.\n\n"
+        "Rewrite the following drug interaction mechanism for a patient with no "
+        "medical training. Use one short sentence of 20 words or fewer. "
+        "Use everyday words, avoid medical jargon, and do not add warnings or advice.\n\n"
         f"Mechanism: {mechanism}\n\nPlain English:"
     )
     try:

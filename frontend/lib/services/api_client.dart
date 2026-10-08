@@ -59,8 +59,11 @@ class ApiClient {
             Dio(
               BaseOptions(
                 baseUrl: baseUrl ?? defaultBaseUrl,
-                connectTimeout: const Duration(seconds: 15),
-                receiveTimeout: const Duration(seconds: 15),
+                // Render can take a little while to wake from sleep. Do not
+                // switch to cached mode while a legitimate cold-start request
+                // is still in flight.
+                connectTimeout: const Duration(seconds: 45),
+                receiveTimeout: const Duration(seconds: 45),
                 headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
@@ -324,6 +327,14 @@ class ApiClient {
         },
       );
       return Map<String, dynamic>.from(res.data as Map);
+    } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<void> deleteMedication(String entryId) async {
+    try {
+      await dio.delete('/medications/$entryId');
     } catch (e) {
       throw _handleError(e);
     }

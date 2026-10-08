@@ -40,7 +40,7 @@ class _ScanScreenState extends State<ScanScreen> {
 
   Future<void> _scanWithCamera() async {
     setState(() {
-      _isProcessing = false;
+      _isProcessing = true;
       _errorMessage = null;
     });
 
@@ -61,8 +61,6 @@ class _ScanScreenState extends State<ScanScreen> {
       // User cancelled — do nothing.
       return;
     }
-
-    setState(() => _isProcessing = true);
 
     try {
       final ocrService = OcrService(accessToken: widget.accessToken);

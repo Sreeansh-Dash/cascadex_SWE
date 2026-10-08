@@ -63,6 +63,7 @@ class MedicationNotifier extends StateNotifier<MedicationState> {
   final ApiClient _apiClient;
   final LocalCacheService _cache;
   final String _userId;
+  bool _isLoadingMedications = false;
 
   MedicationNotifier({
     required ApiClient apiClient,
@@ -76,8 +77,11 @@ class MedicationNotifier extends StateNotifier<MedicationState> {
   }
 
   Future<void> loadMedications() async {
+    if (_isLoadingMedications) return;
+    _isLoadingMedications = true;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
+      await _cache.init();
       // 1. Try fetching live from API
       final liveMeds = await _apiClient.listMedications(includeInactive: true);
       // Cache the result
@@ -102,6 +106,8 @@ class MedicationNotifier extends StateNotifier<MedicationState> {
         medications: cached,
         errorMessage: 'Working offline — showing cached medications',
       );
+    } finally {
+      _isLoadingMedications = false;
     }
   }
 
@@ -154,6 +160,18 @@ class MedicationNotifier extends StateNotifier<MedicationState> {
   Future<bool> deactivateMedication(String entryId) async {
     try {
       await _apiClient.patchMedication(entryId, deactivate: true);
+      await loadMedications();
+      return true;
+    } catch (e) {
+      final msg = e is ApiException ? e.message : e.toString();
+      state = state.copyWith(errorMessage: msg);
+      return false;
+    }
+  }
+
+  Future<bool> deleteMedication(String entryId) async {
+    try {
+      await _apiClient.deleteMedication(entryId);
       await loadMedications();
       return true;
     } catch (e) {

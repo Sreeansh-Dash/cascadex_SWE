@@ -78,7 +78,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/scan',
         builder: (context, state) {
           final auth = ref.read(authProvider);
-          return ScanScreen(accessToken: auth.userId ?? '');
+          return ScanScreen(accessToken: auth.accessToken ?? '');
         },
       ),
       GoRoute(

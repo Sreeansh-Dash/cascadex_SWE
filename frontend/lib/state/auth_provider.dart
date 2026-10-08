@@ -40,6 +40,7 @@ class AuthState {
   final bool isLoading;
   final bool isAuthenticated;
   final String? userId;
+  final String? accessToken;
   final String? userRole; // 'user' | 'caregiver'
   final String? caregiverTargetUserId;
   final String? errorMessage;
@@ -48,6 +49,7 @@ class AuthState {
     this.isLoading = false,
     this.isAuthenticated = false,
     this.userId,
+    this.accessToken,
     this.userRole,
     this.caregiverTargetUserId,
     this.errorMessage,
@@ -57,6 +59,7 @@ class AuthState {
     bool? isLoading,
     bool? isAuthenticated,
     String? userId,
+    String? accessToken,
     String? userRole,
     String? caregiverTargetUserId,
     String? errorMessage,
@@ -65,6 +68,7 @@ class AuthState {
       isLoading: isLoading ?? this.isLoading,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       userId: userId ?? this.userId,
+      accessToken: accessToken ?? this.accessToken,
       userRole: userRole ?? this.userRole,
       caregiverTargetUserId: caregiverTargetUserId ?? this.caregiverTargetUserId,
       errorMessage: errorMessage,
@@ -98,6 +102,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           isLoading: false,
           isAuthenticated: true,
           userId: userId,
+          accessToken: token,
           userRole: role ?? 'user',
           caregiverTargetUserId: target,
         );

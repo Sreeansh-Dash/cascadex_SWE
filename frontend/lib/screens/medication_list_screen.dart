@@ -62,6 +62,35 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
     }
   }
 
+  Future<void> _handleDeleteMedication(Map<String, dynamic> medication) async {
+    final name = (medication['generic_name'] as String? ?? 'this medication');
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove medication?'),
+        content: Text('Remove $name and its dose history from this account?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final deleted = await ref.read(medicationProvider.notifier)
+        .deleteMedication(medication['entry_id'] as String);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(deleted ? '$name removed.' : 'Could not remove $name.')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final medState = ref.watch(medicationProvider);
@@ -375,6 +404,22 @@ class _MedicationListScreenState extends ConsumerState<MedicationListScreen> {
                     child:
                         SeverityBadge(rawSeverity: severity, isCompact: true),
                   ),
+                PopupMenuButton<String>(
+                  tooltip: 'Medication actions',
+                  onSelected: (value) {
+                        if (value == 'delete') _handleDeleteMedication(med);
+                  },
+                  itemBuilder: (context) => const [
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: Icon(Icons.delete_outline),
+                            title: Text('Remove medication'),
+                          ),
+                        ),
+                  ],
+                ),
               ],
             ),
             const SizedBox(height: 12),
