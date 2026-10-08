@@ -95,7 +95,11 @@ class _ScanScreenState extends State<ScanScreen> {
       if (!mounted) return;
       setState(() {
         _isProcessing = false;
-        _errorMessage = 'Could not contact the server. Please try again.';
+        _errorMessage = e.statusCode == 401
+            ? 'Your session expired. Please sign in again and retry.'
+            : e.statusCode == 422
+                ? 'The label could not be read. Try a closer, brighter photo.'
+                : 'The scan service is unavailable. Please try again.';
       });
       debugPrint('OcrServiceException: $e');
     } catch (e) {

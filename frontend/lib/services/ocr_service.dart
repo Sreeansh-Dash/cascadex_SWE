@@ -108,6 +108,12 @@ class OcrService {
 
   /// POST extracted text to `POST /scans` and parse the response.
   Future<OcrScanResult> _postScan(String ocrText) async {
+    // Camera OCR can include the entire side of a medicine box. The API only
+    // needs the leading label text and accepts at most 2,000 characters.
+    final payloadText = ocrText.trim();
+    final boundedText = payloadText.length > 2000
+        ? payloadText.substring(0, 2000)
+        : payloadText;
     final uri = Uri.parse('$baseUrl/scans');
     final response = await http.post(
       uri,
@@ -115,19 +121,20 @@ class OcrService {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $accessToken',
       },
-      body: jsonEncode({'ocr_text': ocrText}),
+      body: jsonEncode({'ocr_text': boundedText}),
     );
 
     if (response.statusCode != 201) {
       throw OcrServiceException(
-        'Backend returned ${response.statusCode}: ${response.body}',
+        'Backend returned ${response.statusCode}',
+        statusCode: response.statusCode,
       );
     }
 
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     final rawCandidates = (body['candidates'] as List<dynamic>?) ?? [];
     return OcrScanResult(
-      ocrText: body['ocr_text'] as String? ?? ocrText,
+      ocrText: body['ocr_text'] as String? ?? boundedText,
       scanId: body['scan_id'] as String? ?? '',
       status: body['status'] as String? ?? 'unmatched',
       primaryMatch: body['primary_match'] as Map<String, dynamic>?,
@@ -140,7 +147,9 @@ class OcrService {
 /// Thrown by [OcrService] on backend communication errors.
 class OcrServiceException implements Exception {
   final String message;
-  const OcrServiceException(this.message);
+  final int? statusCode;
+
+  const OcrServiceException(this.message, {this.statusCode});
 
   @override
   String toString() => 'OcrServiceException: $message';
