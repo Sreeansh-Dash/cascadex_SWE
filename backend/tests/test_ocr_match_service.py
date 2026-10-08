@@ -22,7 +22,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from app.models.drug import DrugRead
-from app.services.ocr_match_service import _clean_ocr_text, run_ocr_match
+from app.services.ocr_match_service import _clean_ocr_text, _fetch_candidates, run_ocr_match
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -230,6 +230,35 @@ def test_clean_ocr_text_strips_dosage():
     assert "01/12/2024" not in cleaned
     assert "4831" not in cleaned
     assert "Warfarin" in cleaned or "warfarin" in cleaned.lower()
+
+
+@pytest.mark.asyncio
+async def test_fetch_candidates_searches_all_ocr_tokens():
+    """A name later in noisy OCR text must still reach the catalog pre-filter."""
+    mock_session = AsyncMock()
+    mock_result = AsyncMock()
+    mock_result.data.return_value = [
+        {
+            "drug_id": ASPIRIN.drug_id,
+            "generic_name": ASPIRIN.generic_name,
+            "drug_class": ASPIRIN.drug_class,
+            "atc_code": ASPIRIN.atc_code,
+            "default_form": ASPIRIN.default_form,
+            "external_source_id": ASPIRIN.external_source_id,
+            "matched_name": ASPIRIN.generic_name,
+        }
+    ]
+    mock_session.run.return_value = mock_result
+
+    candidates = await _fetch_candidates(
+        "pirin bottle container and One ASPIRIN Sreeansh",
+        mock_session,
+    )
+
+    assert [candidate.generic_name for candidate in candidates] == ["aspirin"]
+    params = mock_session.run.call_args.kwargs
+    assert "aspirin" in params["tokens"]
+    assert "pirin" in params["tokens"]
 
 
 def test_clean_ocr_text_truncates_to_60():

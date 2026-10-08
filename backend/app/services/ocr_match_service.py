@@ -136,16 +136,21 @@ async def _fetch_candidates(query: str, session: AsyncSession) -> list[DrugRead]
     ``settings.ocr_match_top_k`` results, each with ``matched_name`` set
     to the name that triggered the match.
     """
-    tokens = query.split()
-    if not tokens or len(tokens[0]) < 3:
+    # OCR frequently drops the first character of a name or includes the
+    # medication later in the label (for example, "pirin bottle ... aspirin").
+    # Searching only the first token therefore misses valid catalog entries.
+    # Use all meaningful alphabetic tokens while still keeping the database
+    # pre-filter bounded by the configured top-K limit.
+    tokens = list(dict.fromkeys(re.findall(r"[a-z][a-z'-]{2,}", query.lower())))
+    if not tokens:
         return []
-    search_term = tokens[0]  # use first meaningful token as search key
 
     result = await session.run(
         """
+        WITH $tokens AS tokens
         // Generic name search
         MATCH (d:Drug)
-        WHERE toLower(d.generic_name) CONTAINS toLower($q)
+        WHERE ANY(token IN tokens WHERE toLower(d.generic_name) CONTAINS token)
         RETURN d.drug_id            AS drug_id,
                d.generic_name       AS generic_name,
                d.drug_class         AS drug_class,
@@ -155,8 +160,9 @@ async def _fetch_candidates(query: str, session: AsyncSession) -> list[DrugRead]
                d.generic_name       AS matched_name
         UNION
         // Brand name search
+        WITH $tokens AS tokens
         MATCH (bn:DrugBrandName)-[:BRAND_OF]->(d:Drug)
-        WHERE toLower(bn.brand_name) CONTAINS toLower($q)
+        WHERE ANY(token IN tokens WHERE toLower(bn.brand_name) CONTAINS token)
         RETURN d.drug_id            AS drug_id,
                d.generic_name       AS generic_name,
                d.drug_class         AS drug_class,
@@ -166,7 +172,7 @@ async def _fetch_candidates(query: str, session: AsyncSession) -> list[DrugRead]
                bn.brand_name        AS matched_name
         LIMIT $limit
         """,
-        q=search_term,
+        tokens=tokens,
         limit=settings.ocr_match_top_k,
     )
     rows = await result.data()
