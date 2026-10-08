@@ -575,12 +575,27 @@ async def delete_medication(
     user_id: str,
     entry_id: str,
 ) -> None:
-    """Permanently remove an owned medication and its dependent records."""
+    """Permanently remove an owned medication and related warnings.
+
+    Interaction alerts are denormalized with both medication entry IDs, so
+    deleting either medication must also remove any warning involving it.
+    Related in-app notifications are removed as well to avoid stale warning
+    entries in the notification feed.
+    """
     result = await session.run(
         """
         MATCH (u:User {user_id: $user_id})-[:HAS_MEDICATION]->(me:MedicationEntry {entry_id: $entry_id})
+        OPTIONAL MATCH (u)-[:HAS_ALERT]->(a:InteractionAlert)
+        WHERE a.entry_a_id = me.entry_id OR a.entry_b_id = me.entry_id
+        OPTIONAL MATCH (u)-[:HAS_NOTIFICATION]->(n:Notification)
+        WHERE n.related_alert_id = a.alert_id
         OPTIONAL MATCH (me)-[:HAS_SCHEDULE|HAS_DOSE_LOG]->(dependent)
-        WITH u, me, collect(dependent) AS dependents
+        WITH me,
+             collect(DISTINCT a) AS alerts,
+             collect(DISTINCT n) AS notifications,
+             collect(DISTINCT dependent) AS dependents
+        FOREACH (node IN notifications | DETACH DELETE node)
+        FOREACH (node IN alerts | DETACH DELETE node)
         FOREACH (node IN dependents | DETACH DELETE node)
         DETACH DELETE me
         RETURN count(me) AS deleted

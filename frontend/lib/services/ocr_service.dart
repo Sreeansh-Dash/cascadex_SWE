@@ -12,8 +12,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'api_client.dart';
 
 /// Result returned by [OcrService.extractAndMatch].
@@ -53,11 +52,14 @@ class OcrService {
 
   /// JWT Bearer token for the authenticated user.
   final String accessToken;
+  final ApiClient _apiClient;
 
   OcrService({
     required this.accessToken,
     String? baseUrl,
-  }) : baseUrl = baseUrl ?? ApiClient.defaultBaseUrl;
+    ApiClient? apiClient,
+  })  : baseUrl = baseUrl ?? ApiClient.defaultBaseUrl,
+        _apiClient = apiClient ?? ApiClient(baseUrl: baseUrl);
 
   /// Extract text from [imagePath] using ML Kit, then submit to `POST /scans`.
   ///
@@ -114,15 +116,18 @@ class OcrService {
     final boundedText = payloadText.length > 2000
         ? payloadText.substring(0, 2000)
         : payloadText;
-    final uri = Uri.parse('$baseUrl/scans');
-    final response = await http.post(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
-      body: jsonEncode({'ocr_text': boundedText}),
-    );
+    Response<dynamic> response;
+    try {
+      response = await _apiClient.dio.post(
+        '/scans',
+        data: {'ocr_text': boundedText},
+      );
+    } on DioException catch (error) {
+      throw OcrServiceException(
+        'Backend returned ${error.response?.statusCode ?? 0}',
+        statusCode: error.response?.statusCode,
+      );
+    }
 
     if (response.statusCode != 201) {
       throw OcrServiceException(
@@ -131,7 +136,7 @@ class OcrService {
       );
     }
 
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    final body = Map<String, dynamic>.from(response.data as Map);
     final rawCandidates = (body['candidates'] as List<dynamic>?) ?? [];
     return OcrScanResult(
       ocrText: body['ocr_text'] as String? ?? boundedText,

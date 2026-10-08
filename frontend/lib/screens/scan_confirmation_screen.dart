@@ -1,4 +1,4 @@
-/// CascadeX Scan Confirmation Screen — Phase 05.
+﻿/// CascadeX Scan Confirmation Screen â€” Phase 05.
 ///
 /// Shows the proposed drug match from `POST /scans` and requires an explicit
 /// "Confirm & Add" tap before calling `POST /medications`.
@@ -11,8 +11,7 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:dio/dio.dart';
 
 import '../services/api_client.dart';
 import '../services/ocr_service.dart';
@@ -57,7 +56,7 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // POST /medications  (Phase 04 endpoint — reused here, not duplicated)
+  // POST /medications  (Phase 04 endpoint â€” reused here, not duplicated)
   // ---------------------------------------------------------------------------
 
   Future<void> _confirmAndAdd() async {
@@ -69,18 +68,14 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
     });
 
     try {
-      final uri = Uri.parse('$_baseUrl/medications');
-      final response = await http.post(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${widget.accessToken}',
-        },
-        body: jsonEncode({
+      final apiClient = ApiClient(baseUrl: _baseUrl);
+      final response = await apiClient.dio.post(
+        '/medications',
+        data: {
           'drug_id': _selectedDrug!['drug_id'],
           'input_method': 'scan',
           'notes': 'Added via scan (scan_id: ${widget.scanResult.scanId})',
-        }),
+        },
       );
 
       if (!mounted) return;
@@ -93,12 +88,19 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
         widget.onMedicationAdded?.call(_selectedDrug!['drug_id'] as String);
         _showSuccessAndPop();
       } else {
-        final body = jsonDecode(response.body);
         setState(() {
           _isAdding = false;
-          _errorMessage = body['message'] as String? ?? 'Failed to add medication.';
+          _errorMessage = 'Failed to add medication.';
         });
       }
+    } on DioException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isAdding = false;
+        _errorMessage = error.response?.statusCode == 401
+            ? 'Your session expired. Please sign in again and retry.'
+            : 'Network error. Please check your connection and try again.';
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -107,7 +109,6 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
       });
     }
   }
-
   void _showSuccessAndPop() {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -144,7 +145,7 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ── Scanned text display ─────────────────────────────────────
+            // â”€â”€ Scanned text display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             Semantics(
               label: 'Scanned text: ${widget.scanResult.ocrText}',
               child: Container(
@@ -184,7 +185,7 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
 
             const SizedBox(height: 20),
 
-            // ── Match result header ──────────────────────────────────────
+            // â”€â”€ Match result header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             if (!hasMatch) ...[
               _NoMatchBanner(message: widget.scanResult.message),
               const SizedBox(height: 16),
@@ -193,7 +194,7 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
               const SizedBox(height: 16),
             ],
 
-            // ── Candidate selection ──────────────────────────────────────
+            // â”€â”€ Candidate selection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             if (candidates.isEmpty && !hasMatch)
               Semantics(
                 label: 'No drug candidates found',
@@ -226,7 +227,7 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
 
             const SizedBox(height: 20),
 
-            // ── Error message ────────────────────────────────────────────
+            // â”€â”€ Error message â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             if (_errorMessage != null)
               Semantics(
                 liveRegion: true,
@@ -244,12 +245,12 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
                 ),
               ),
 
-            // ── Action buttons ───────────────────────────────────────────
+            // â”€â”€ Action buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             if (!_added) ...[
               Semantics(
                 button: true,
                 label: _selectedDrug == null
-                    ? 'Confirm and add medication — disabled, no drug selected'
+                    ? 'Confirm and add medication â€” disabled, no drug selected'
                     : 'Confirm and add ${_selectedDrug!['generic_name']} to medications',
                 child: ElevatedButton.icon(
                   onPressed: (_isAdding || _selectedDrug == null) ? null : _confirmAndAdd,
@@ -261,7 +262,7 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
                         )
                       : const Icon(Icons.check_circle_outline),
                   label: Text(
-                    _isAdding ? 'Adding…' : 'Confirm & Add',
+                    _isAdding ? 'Addingâ€¦' : 'Confirm & Add',
                     style: const TextStyle(
                         fontSize: 17, fontWeight: FontWeight.bold),
                   ),
@@ -285,7 +286,7 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
                   onPressed: _isAdding ? null : () => Navigator.of(context).pop(false),
                   icon: const Icon(Icons.close),
                   label: const Text(
-                    'Cancel — don\'t add',
+                    'Cancel â€” don\'t add',
                     style: TextStyle(fontSize: 16),
                   ),
                   style: OutlinedButton.styleFrom(
@@ -300,7 +301,7 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
 
             const SizedBox(height: 24),
 
-            // ── Persistent disclaimer (SRS §7) ───────────────────────────
+            // â”€â”€ Persistent disclaimer (SRS Â§7) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             Semantics(
               label: 'Safety disclaimer',
               child: Container(
@@ -317,7 +318,7 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        '⚠️ This is not a substitute for advice from a pharmacist or doctor. '
+                        'âš ï¸ This is not a substitute for advice from a pharmacist or doctor. '
                         'Always verify the drug name before confirming.',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: colorScheme.onTertiaryContainer,
@@ -369,8 +370,8 @@ class _MatchHeader extends StatelessWidget {
           Expanded(
             child: Text(
               isMatched
-                  ? 'Match found — please review and confirm.'
-                  : 'Partial match — select the correct drug below.',
+                  ? 'Match found â€” please review and confirm.'
+                  : 'Partial match â€” select the correct drug below.',
               style: TextStyle(
                 color: isMatched
                     ? Colors.green.shade900

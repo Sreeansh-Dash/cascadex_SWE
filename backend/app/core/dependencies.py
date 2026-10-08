@@ -70,20 +70,46 @@ async def get_current_user(
             detail={"code": "token_revoked", "message": "Token has been revoked"},
         )
 
+    target_user_id = account_id if role == "user" else x_caregiver_target_user
     auth_context = {
         "account_id": account_id,
-        "user_id": account_id if role == "user" else x_caregiver_target_user,
+        "user_id": target_user_id,
         "role": role,
         "permission_level": None,
     }
 
     # If caregiver acting on behalf of a primary user, check link permission level
-    if role == "caregiver" and x_caregiver_target_user:
+    if role == "caregiver":
+        # A caregiver may be linked to one or more users. When the client has
+        # not selected a target yet, use the most recently created link so
+        # read endpoints still work immediately after caregiver login.
+        if not target_user_id:
+            target_res = await session.run(
+                """
+                MATCH (c:Caregiver {caregiver_id: $cg_id})-[r:CARE_GIVER_FOR]->(u:User)
+                RETURN u.user_id AS target_user_id, r.permission_level AS perm
+                ORDER BY r.linked_at DESC
+                LIMIT 1
+                """,
+                {"cg_id": account_id},
+            )
+            target_record = await target_res.single()
+            if target_record:
+                target_user_id = target_record["target_user_id"]
+                auth_context["user_id"] = target_user_id
+                auth_context["permission_level"] = PermissionLevel(target_record["perm"])
+
+        if not target_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={"code": "caregiver_target_required", "message": "Caregiver is not linked to a user"},
+            )
+
         perm_query = """
         MATCH (c:Caregiver {caregiver_id: $cg_id})-[r:CARE_GIVER_FOR]->(u:User {user_id: $target_id})
         RETURN r.permission_level AS perm
         """
-        perm_res = await session.run(perm_query, {"cg_id": account_id, "target_id": x_caregiver_target_user})
+        perm_res = await session.run(perm_query, {"cg_id": account_id, "target_id": target_user_id})
         perm_rec = await perm_res.single()
         if not perm_rec:
             raise HTTPException(
