@@ -55,8 +55,9 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
     super.initState();
     // An ambiguous scan must be retaken, not resolved by guessing from a
     // multi-medicine label.
-    _selectedDrug =
-        widget.scanResult.status == 'ambiguous' ? null : widget.scanResult.primaryMatch;
+    _selectedDrug = widget.scanResult.status == 'ambiguous'
+        ? null
+        : widget.scanResult.primaryMatch;
   }
 
   // ---------------------------------------------------------------------------
@@ -80,8 +81,14 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
         },
         body: jsonEncode({
           'drug_id': _selectedDrug!['drug_id'],
+          'dosage_amount': 1,
+          'dosage_unit': 'tablet',
+          'schedules': [
+            {'time_of_day': '08:00', 'days_of_week': <int>[]},
+          ],
           'input_method': 'scan',
-          'notes': 'Added via scan (scan_id: ${widget.scanResult.scanId})',
+          'notes':
+              'Verify dosage and schedule (added via scan; scan_id: ${widget.scanResult.scanId})',
         }),
       );
 
@@ -95,20 +102,28 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
         widget.onMedicationAdded?.call(_selectedDrug!['drug_id'] as String);
         _showSuccessAndPop();
       } else {
-        final body = jsonDecode(response.body);
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        final detail = body['detail'];
+        final message = detail is Map<String, dynamic>
+            ? detail['message'] as String?
+            : detail is String
+                ? detail
+                : body['message'] as String?;
         setState(() {
           _isAdding = false;
-          _errorMessage = body['message'] as String? ?? 'Failed to add medication.';
+          _errorMessage = message ?? 'Failed to add medication.';
         });
       }
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _isAdding = false;
-        _errorMessage = 'Network error. Please check your connection and try again.';
+        _errorMessage =
+            'Network error. Please check your connection and try again.';
       });
     }
   }
+
   void _showSuccessAndPop() {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -295,14 +310,13 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 12),
-
               Semantics(
                 button: true,
                 label: 'Cancel and go back without adding any medication',
                 child: OutlinedButton.icon(
-                  onPressed: _isAdding ? null : () => Navigator.of(context).pop(false),
+                  onPressed:
+                      _isAdding ? null : () => Navigator.of(context).pop(false),
                   icon: const Icon(Icons.close),
                   label: const Text(
                     'Cancel — don\'t add',
@@ -370,9 +384,8 @@ class _MatchHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: isMatched
-            ? Colors.green.shade50
-            : colorScheme.secondaryContainer,
+        color:
+            isMatched ? Colors.green.shade50 : colorScheme.secondaryContainer,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: isMatched ? Colors.green.shade200 : colorScheme.secondary,
@@ -475,8 +488,12 @@ class _CandidateTile extends StatelessWidget {
           child: Row(
             children: [
               Icon(
-                isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                isSelected
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+                color: isSelected
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -499,7 +516,8 @@ class _CandidateTile extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13,
                           color: isSelected
-                              ? colorScheme.onPrimaryContainer.withValues(alpha: 0.8)
+                              ? colorScheme.onPrimaryContainer
+                                  .withValues(alpha: 0.8)
                               : colorScheme.onSurfaceVariant,
                         ),
                       ),

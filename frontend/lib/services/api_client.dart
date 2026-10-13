@@ -101,7 +101,7 @@ class ApiClient {
               // Retry original request with new token
               final opts = error.requestOptions;
               final newToken = await secureStorage.getAccessToken();
-              opts.headers['Authorization'] = 'Bearer $newToken';
+              opts.headers['Authorization'] = 'Bearer ${newToken ?? ''}';
               try {
                 final response = await dio.fetch(opts);
                 return handler.resolve(response);
@@ -157,7 +157,9 @@ class ApiClient {
           return ApiException(
             statusCode: res.statusCode,
             code: detail['code']?.toString() ?? 'error',
-            message: detail['message']?.toString() ?? error.message ?? 'Unknown error',
+            message: detail['message']?.toString() ??
+                error.message ??
+                'Unknown error',
             rawData: res.data,
           );
         } else if (detail is String) {
@@ -197,7 +199,8 @@ class ApiClient {
           'full_name': fullName,
           'date_of_birth': dateOfBirth,
           if (email != null && email.isNotEmpty) 'email': email,
-          if (phoneNumber != null && phoneNumber.isNotEmpty) 'phone_number': phoneNumber,
+          if (phoneNumber != null && phoneNumber.isNotEmpty)
+            'phone_number': phoneNumber,
           'password': password,
         },
       );
@@ -237,7 +240,8 @@ class ApiClient {
         data: {
           'caregiver_email_or_phone': caregiverEmailOrPhone,
           'permission_level': permissionLevel,
-          if (relationshipToUser != null) 'relationship_to_user': relationshipToUser,
+          if (relationshipToUser != null)
+            'relationship_to_user': relationshipToUser,
           if (initialPassword != null && initialPassword.isNotEmpty)
             'initial_password': initialPassword,
         },
@@ -260,7 +264,8 @@ class ApiClient {
         data: {
           'full_name': fullName,
           if (email != null && email.isNotEmpty) 'email': email,
-          if (phoneNumber != null && phoneNumber.isNotEmpty) 'phone_number': phoneNumber,
+          if (phoneNumber != null && phoneNumber.isNotEmpty)
+            'phone_number': phoneNumber,
           'password': password,
         },
       );
