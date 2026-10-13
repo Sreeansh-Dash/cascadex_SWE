@@ -70,7 +70,8 @@ class AuthState {
       userId: userId ?? this.userId,
       accessToken: accessToken ?? this.accessToken,
       userRole: userRole ?? this.userRole,
-      caregiverTargetUserId: caregiverTargetUserId ?? this.caregiverTargetUserId,
+      caregiverTargetUserId:
+          caregiverTargetUserId ?? this.caregiverTargetUserId,
       errorMessage: errorMessage,
     );
   }
@@ -145,6 +146,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isLoading: false,
         isAuthenticated: true,
         userId: userId,
+        accessToken: accessToken,
         userRole: role,
         errorMessage: null,
       );
@@ -174,7 +176,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
 
       // Auto-login after registration
-      final credential = (email != null && email.isNotEmpty) ? email : phoneNumber!;
+      final credential =
+          (email != null && email.isNotEmpty) ? email : phoneNumber!;
       return await login(emailOrPhone: credential, password: password);
     } catch (e) {
       final msg = e is ApiException ? e.message : e.toString();
