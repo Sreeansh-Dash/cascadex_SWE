@@ -225,6 +225,7 @@ async def test_manage_caregiver_can_add_medication(client: AsyncClient):
             "caregiver_email_or_phone": cg_email,
             "permission_level": "manage",
             "relationship_to_user": "Daughter",
+            "initial_password": "Caregiver_Pass_123!",
         },
         headers=headers_primary,
     )

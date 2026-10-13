@@ -70,7 +70,7 @@ async def seed_drug_catalog(neo4j_driver):
     """Seed full DDInter drug catalog + known interaction edges before each test.
 
     Idempotent (MERGE) — safe to call repeatedly.  Seeds:
-    - All 32 drugs from drugs_fixture.csv
+    - All 60 drugs from drugs_fixture.csv
     - Brand name nodes for the original 4 Phase 04 drugs
     - Key INTERACTS_WITH edges for Phase 06 interaction engine tests
 
@@ -97,7 +97,7 @@ async def seed_drug_catalog(neo4j_driver):
         # Drug nodes and all other nodes are preserved.
         await session.run("MATCH ()-[r:INTERACTS_WITH]->() DELETE r")
 
-        # Full DDInter drug catalog (32 drugs)
+        # Full DDInter drug catalog (32 primary + 28 general drugs)
         drugs = [
             {"drug_id": "D001",    "generic_name": "warfarin",        "drug_class": "anticoagulant",               "atc_code": "B01AA03", "default_form": "tablet",  "external_source_id": "DDI-001"},
             {"drug_id": "D002",    "generic_name": "aspirin",         "drug_class": "antiplatelet",                "atc_code": "B01AC06", "default_form": "tablet",  "external_source_id": "DDI-002"},

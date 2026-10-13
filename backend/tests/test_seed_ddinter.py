@@ -88,7 +88,7 @@ async def test_import_creates_expected_node_counts(clean_neo4j):
         v=TEST_VERSION,
     )
     record = await result.single()
-    assert record["cnt"] == 32, f"Expected 32 Drug nodes, got {record['cnt']}"
+    assert record["cnt"] == 60, f"Expected 60 Drug nodes, got {record['cnt']}"
 
     # Check DatasetVersion node exists with correct drug_count
     result = await clean_neo4j.run(
@@ -97,7 +97,7 @@ async def test_import_creates_expected_node_counts(clean_neo4j):
     )
     record = await result.single()
     assert record is not None, "DatasetVersion node not created"
-    assert record["dc"] == 32
+    assert record["dc"] == 60
 
     # Check INTERACTS_WITH edge count (global — not version-tagged)
     result = await clean_neo4j.run(
@@ -130,7 +130,7 @@ async def test_re_import_same_version_is_idempotent(clean_neo4j):
         v=TEST_VERSION,
     )
     record = await result.single()
-    assert record["cnt"] == 32, (
-        f"Idempotency broken: expected 32 Drug nodes after 2 imports, "
+    assert record["cnt"] == 60, (
+        f"Idempotency broken: expected 60 Drug nodes after 2 imports, "
         f"got {record['cnt']}"
     )

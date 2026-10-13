@@ -242,9 +242,9 @@ async def test_results_ordered_major_first(neo4j_session):
 
 @pytest.mark.asyncio
 async def test_plain_language_falls_back_to_mechanism_in_stub_mode(neo4j_session):
-    """In stub mode (no GEMINI_API_KEY), plain_language must equal mechanism."""
+    """Stub mode still returns a patient-readable safety explanation."""
     # GEMINI_API_KEY is empty in test env — stub mode active
     result = await check_pairs(neo4j_session, drug_ids=["D001", "D002"])
     interaction = result.interactions[0]
-    # In stub mode: plain_language_rewrite returns mechanism unchanged
-    assert interaction.plain_language == interaction.mechanism
+    assert interaction.plain_language != interaction.mechanism
+    assert "bleeding" in interaction.plain_language.lower()
