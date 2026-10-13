@@ -5,8 +5,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from app.models.drug import DrugRead
-from app.services.ocr_match_service import run_ocr_match
 from app.services.drug_normalizer import NormalizeResult
+from app.services.ocr_match_service import run_ocr_match
 
 
 def _drug(drug_id: str, name: str) -> DrugRead:

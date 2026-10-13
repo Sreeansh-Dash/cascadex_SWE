@@ -26,7 +26,6 @@ async def test_notification_feed_returns_new_interaction_notification():
     try:
         # The endpoint's auth dependency is intentionally exercised through
         # the application; auth is replaced only with a resolved test context.
-        from app.api import notifications
         from app.core.dependencies import get_current_user
         app.dependency_overrides[get_current_user] = lambda: {
             "account_id": "usr_1", "user_id": "usr_1", "role": "user",

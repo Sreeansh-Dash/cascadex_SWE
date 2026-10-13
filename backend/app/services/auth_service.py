@@ -22,7 +22,12 @@ from app.core.security import (
 from app.core.security import (
     verify_otp as check_otp,
 )
-from app.models.caregiver import CaregiverCreate, CaregiverLinkRequest, CaregiverRead, PermissionLevel
+from app.models.caregiver import (
+    CaregiverCreate,
+    CaregiverLinkRequest,
+    CaregiverRead,
+    PermissionLevel,
+)
 from app.models.user import (
     LoginRequest,
     OTPResponse,
