@@ -40,5 +40,4 @@ async def test_notification_feed_returns_new_interaction_notification():
 
 
 def test_caregiver_registration_route_is_exposed():
-    paths = {route.path for route in app.routes}
-    assert "/api/v1/auth/caregivers/register" in paths
+    assert "/api/v1/auth/caregivers/register" in app.openapi()["paths"]
