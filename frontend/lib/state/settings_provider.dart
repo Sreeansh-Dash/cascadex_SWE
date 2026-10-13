@@ -57,6 +57,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     required String emailOrPhone,
     required String permissionLevel,
     String? relationship,
+    String? initialPassword,
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null, successMessage: null);
     try {
@@ -64,6 +65,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
         caregiverEmailOrPhone: emailOrPhone,
         permissionLevel: permissionLevel,
         relationshipToUser: relationship,
+        initialPassword: initialPassword,
       );
 
       state = state.copyWith(

@@ -22,7 +22,7 @@ from app.core.security import (
 from app.core.security import (
     verify_otp as check_otp,
 )
-from app.models.caregiver import CaregiverLinkRequest, CaregiverRead, PermissionLevel
+from app.models.caregiver import CaregiverCreate, CaregiverLinkRequest, CaregiverRead, PermissionLevel
 from app.models.user import (
     LoginRequest,
     OTPResponse,
@@ -32,6 +32,56 @@ from app.models.user import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+async def register_caregiver(data: CaregiverCreate, session: AsyncSession) -> CaregiverRead:
+    """Create a login-capable caregiver account that can later be linked."""
+    if not data.email and not data.phone_number:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"code": "contact_required", "message": "Email or phone number is required"},
+        )
+    duplicate = await session.run(
+        """
+        MATCH (c:Caregiver)
+        WHERE ($email IS NOT NULL AND c.email = $email)
+           OR ($phone IS NOT NULL AND c.phone_number = $phone)
+        RETURN c
+        """,
+        {"email": data.email, "phone": data.phone_number},
+    )
+    if await duplicate.single():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": "caregiver_already_registered", "message": "Caregiver contact is already registered"},
+        )
+    caregiver_id = f"cg_{uuid.uuid4().hex[:12]}"
+    now_iso = datetime.now(UTC).isoformat()
+    result = await session.run(
+        """
+        CREATE (c:Caregiver {
+            caregiver_id: $caregiver_id, full_name: $full_name,
+            email: $email, phone_number: $phone_number,
+            password_hash: $password_hash, token_version: 1, created_at: $created_at
+        })
+        RETURN c
+        """,
+        {
+            "caregiver_id": caregiver_id,
+            "full_name": data.full_name,
+            "email": data.email,
+            "phone_number": data.phone_number,
+            "password_hash": hash_password(data.password),
+            "created_at": now_iso,
+        },
+    )
+    node = (await result.single())["c"]
+    return CaregiverRead(
+        caregiver_id=node["caregiver_id"], full_name=node["full_name"],
+        email=node.get("email"), phone_number=node.get("phone_number"),
+        permission_level=PermissionLevel.VIEW_ONLY, relationship_to_user=None,
+        linked_at=node["created_at"],
+    )
 
 
 async def register_user(data: UserCreate, session: AsyncSession) -> UserRead:
@@ -335,6 +385,14 @@ async def link_caregiver(
         cg_node = cg_record["c"]
         caregiver_id = cg_node["caregiver_id"]
     else:
+        if not request.initial_password:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail={
+                    "code": "caregiver_registration_required",
+                    "message": "Provide an initial password when inviting a new caregiver",
+                },
+            )
         caregiver_id = f"cg_{uuid.uuid4().hex[:12]}"
         email_val = identifier if is_email else None
         phone_val = identifier if not is_email else None
@@ -346,6 +404,7 @@ async def link_caregiver(
             full_name: $full_name,
             email: $email,
             phone_number: $phone_number,
+            password_hash: $password_hash,
             token_version: 1,
             created_at: $created_at
         })
@@ -358,6 +417,7 @@ async def link_caregiver(
                 "full_name": full_name_val,
                 "email": email_val,
                 "phone_number": phone_val,
+                "password_hash": hash_password(request.initial_password),
                 "created_at": now_iso,
             },
         )

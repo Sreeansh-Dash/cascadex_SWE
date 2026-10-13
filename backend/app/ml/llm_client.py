@@ -37,6 +37,23 @@ logger = logging.getLogger(__name__)
 _GEMINI_MODEL = "gemini-2.0-flash"
 
 
+def _simplify_locally(mechanism: str) -> str:
+    """Apply a conservative offline rewrite for common clinical wording."""
+    simplified = mechanism.lower()
+    replacements = (
+        ("pharmacodynamic synergism", "These medicines can strengthen each other's effects."),
+        ("hemorrhage", "bleeding"),
+        ("anticoagulation", "blood-thinning"),
+        ("antiplatelet", "clot-preventing"),
+        ("hypotension", "low blood pressure"),
+        ("hyperkalemia", "high potassium"),
+        ("qt prolongation", "an abnormal heart rhythm"),
+    )
+    for source, replacement in replacements:
+        simplified = simplified.replace(source, replacement)
+    return simplified[:240].strip()
+
+
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
@@ -165,12 +182,13 @@ def plain_language_rewrite(mechanism: str) -> str:
 
     client = _gemini_client()
     if client is None:
-        return mechanism  # stub: return original
+        return _simplify_locally(mechanism)
 
     prompt = (
         "Rewrite the following drug interaction mechanism for a patient with no "
-        "medical training. Use one short sentence of 20 words or fewer. "
-        "Use everyday words, avoid medical jargon, and do not add warnings or advice.\n\n"
+        "medical training. Use one short sentence of 15 words or fewer. "
+        "Use everyday words, avoid medical jargon, and preserve only the core risk. "
+        "Do not add new facts, warnings, or treatment advice.\n\n"
         f"Mechanism: {mechanism}\n\nPlain English:"
     )
     try:
@@ -178,5 +196,5 @@ def plain_language_rewrite(mechanism: str) -> str:
         rewritten = response.text.strip()
         return rewritten if rewritten else mechanism
     except Exception as exc:
-        logger.error("plain_language_rewrite: LLM call failed (%s) — returning original", exc)
-        return mechanism
+        logger.error("plain_language_rewrite: LLM call failed (%s) — using local rewrite", exc)
+        return _simplify_locally(mechanism)

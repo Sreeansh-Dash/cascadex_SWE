@@ -24,8 +24,8 @@ from app.models.drug import DrugRead
 # Literals
 # ---------------------------------------------------------------------------
 
-ScanStatus = Literal["pending", "matched", "unmatched"]
-MatchMethod = Literal["exact_generic", "exact_brand", "fuzzy_llm", "none"]
+ScanStatus = Literal["pending", "matched", "ambiguous", "unmatched"]
+MatchMethod = Literal["exact_generic", "exact_brand", "fuzzy_llm", "ambiguous", "none"]
 
 
 # ---------------------------------------------------------------------------
@@ -63,6 +63,7 @@ class OcrMatchResult(BaseModel):
     matched_name: str | None = None  # the specific name (brand/generic) that matched
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     method: MatchMethod = "none"
+    candidates: list[DrugRead] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------

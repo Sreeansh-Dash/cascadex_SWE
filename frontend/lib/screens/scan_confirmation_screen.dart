@@ -53,7 +53,10 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedDrug = widget.scanResult.primaryMatch;
+    // An ambiguous scan must be retaken, not resolved by guessing from a
+    // multi-medicine label.
+    _selectedDrug =
+        widget.scanResult.status == 'ambiguous' ? null : widget.scanResult.primaryMatch;
   }
 
   // ---------------------------------------------------------------------------
@@ -129,6 +132,7 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final hasMatch = widget.scanResult.primaryMatch != null;
+    final isAmbiguous = widget.scanResult.status == 'ambiguous';
     final candidates = widget.scanResult.candidates;
 
     return Scaffold(
@@ -192,7 +196,16 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
             ],
 
             // ── Candidate selection ──────────────────────────────────────
-            if (candidates.isEmpty && !hasMatch)
+            if (isAmbiguous) ...[
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(widget.scanResult.message),
+              ),
+            ] else if (candidates.isEmpty && !hasMatch)
               Semantics(
                 label: 'No drug candidates found',
                 child: Padding(
@@ -207,7 +220,7 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
                   ),
                 ),
               )
-            else ...[
+            else if (!isAmbiguous) ...[
               Text(
                 'Select the correct drug:',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -250,7 +263,9 @@ class _ScanConfirmationScreenState extends State<ScanConfirmationScreen> {
                     ? 'Confirm and add medication — disabled, no drug selected'
                     : 'Confirm and add ${_selectedDrug!['generic_name']} to medications',
                 child: ElevatedButton(
-                  onPressed: (_isAdding || _selectedDrug == null) ? null : _confirmAndAdd,
+                  onPressed: (_isAdding || _selectedDrug == null || isAmbiguous)
+                      ? null
+                      : _confirmAndAdd,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

@@ -21,7 +21,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from app.api import alerts, auth, history, medications, scans
+from app.api import alerts, auth, history, medications, notifications, scans
 from app.core.config import settings
 from app.db.neo4j_session import get_driver, lifespan, ping_neo4j
 from app.middleware.logging_middleware import LoggingMiddleware
@@ -109,6 +109,7 @@ app.include_router(medications.router, prefix=API_V1_PREFIX)
 app.include_router(scans.router, prefix=API_V1_PREFIX)
 app.include_router(alerts.router, prefix=API_V1_PREFIX)
 app.include_router(history.router, prefix=API_V1_PREFIX)
+app.include_router(notifications.router, prefix=API_V1_PREFIX)
 
 # ---------------------------------------------------------------------------
 # Health endpoint

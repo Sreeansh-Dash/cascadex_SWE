@@ -49,7 +49,9 @@ async def run_ocr_match(ocr_text: str, session: AsyncSession) -> OcrMatchResult:
     clean = _clean_ocr_text(ocr_text)
     logger.info("ocr_match: cleaned='%s' (raw_len=%d)", clean, len(ocr_text))
 
-    # ── Stage 1: exact / brand match ────────────────────────────────────────
+    # A label contains more than its medicine name. Try the whole cleaned
+    # value first for backwards compatibility, then resolve catalog names
+    # occurring inside the label.
     norm = await normalize(session, clean)
     if norm.matched and norm.drug is not None:
         method: MatchMethod = (
@@ -65,8 +67,30 @@ async def run_ocr_match(ocr_text: str, session: AsyncSession) -> OcrMatchResult:
             method=method,
         )
 
-    # ── Stage 2: LLM fuzzy match ────────────────────────────────────────────
     candidates = await _fetch_candidates(clean, session)
+    token_matches = _catalog_names_in_text(clean, candidates)
+    if len(token_matches) > 1:
+        return OcrMatchResult(
+            method="ambiguous",
+            candidates=token_matches,
+            matched_name=None,
+        )
+    if len(token_matches) == 1:
+        drug = token_matches[0]
+        method: MatchMethod = (
+            "exact_brand"
+            if drug.matched_name and drug.matched_name.lower() != drug.generic_name.lower()
+            else "exact_generic"
+        )
+        return OcrMatchResult(
+            matched_drug=drug,
+            matched_name=drug.matched_name or drug.generic_name,
+            confidence=0.95,
+            method=method,
+            candidates=token_matches,
+        )
+
+    # ── Stage 2: LLM fuzzy match ────────────────────────────────────────────
     if not candidates:
         logger.info("ocr_match: no candidates found for '%s'", clean)
         return OcrMatchResult(method="none")
@@ -100,6 +124,7 @@ async def run_ocr_match(ocr_text: str, session: AsyncSession) -> OcrMatchResult:
         matched_name=best_name,
         confidence=0.75,
         method="fuzzy_llm",
+        candidates=[matched_drug],
     )
 
 
@@ -127,6 +152,18 @@ def _clean_ocr_text(raw: str) -> str:
     # Remove lone numbers
     text = re.sub(r"\b\d+\b", "", text)
     return text.strip()[:60].strip()
+
+
+def _catalog_names_in_text(text: str, candidates: list[DrugRead]) -> list[DrugRead]:
+    """Return distinct catalog drugs whose generic/brand name is on the label."""
+    normalized = re.sub(r"[^a-z0-9]+", " ", text.lower())
+    matches: dict[str, DrugRead] = {}
+    for drug in candidates:
+        for name in (drug.generic_name, drug.matched_name):
+            if name and re.search(rf"\b{re.escape(name.lower())}\b", normalized):
+                matches[drug.drug_id] = drug
+                break
+    return list(matches.values())
 
 
 async def _fetch_candidates(query: str, session: AsyncSession) -> list[DrugRead]:

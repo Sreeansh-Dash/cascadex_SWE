@@ -74,7 +74,7 @@ async def seed_drug_catalog(neo4j_driver):
     - Brand name nodes for the original 4 Phase 04 drugs
     - Key INTERACTS_WITH edges for Phase 06 interaction engine tests
 
-    Auto-skipped when neo4j_driver skips (unit tests without Neo4j).
+    Auto-skipped when Neo4j is not running.
     """
     async with neo4j_driver.session() as session:
         # Schema constraints (idempotent)

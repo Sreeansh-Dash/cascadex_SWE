@@ -21,6 +21,19 @@ class CaregiverLinkRequest(BaseModel):
     caregiver_email_or_phone: str = Field(..., description="Caregiver's email or phone number")
     permission_level: PermissionLevel = Field(..., description="Access level granted to caregiver ('view_only' or 'manage')")
     relationship_to_user: str | None = Field(default=None, description="e.g. 'Daughter', 'Nurse', 'Son'")
+    initial_password: str | None = Field(
+        default=None, min_length=8,
+        description="Required only when creating a new caregiver account",
+    )
+
+
+class CaregiverCreate(BaseModel):
+    """Credentials for a caregiver account before it is linked to a user."""
+
+    full_name: str = Field(..., min_length=1, max_length=200)
+    email: str | None = None
+    phone_number: str | None = None
+    password: str = Field(..., min_length=8)
 
 
 class CaregiverRead(BaseModel):

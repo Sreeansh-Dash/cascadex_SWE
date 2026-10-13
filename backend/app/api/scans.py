@@ -59,10 +59,19 @@ async def create_scan(
     match_result = await run_ocr_match(body.ocr_text, session)
 
     # Determine response fields
-    if match_result.matched_drug is not None:
+    if match_result.method == "ambiguous":
+        scan_status = "ambiguous"
+        primary_match = None
+        candidates = match_result.candidates
+        names = ", ".join(d.generic_name for d in candidates)
+        message = (
+            f"More than one medicine was found ({names}). "
+            "Please take a photo containing only one medicine."
+        )
+    elif match_result.matched_drug is not None:
         scan_status = "matched"
         primary_match = match_result.matched_drug
-        candidates = [match_result.matched_drug]
+        candidates = match_result.candidates or [match_result.matched_drug]
         message = (
             f"Best match: {match_result.matched_drug.generic_name}. "
             "Please confirm to add."

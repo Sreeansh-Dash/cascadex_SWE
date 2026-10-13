@@ -229,6 +229,7 @@ class ApiClient {
     required String caregiverEmailOrPhone,
     required String permissionLevel, // 'view_only' | 'manage'
     String? relationshipToUser,
+    String? initialPassword,
   }) async {
     try {
       final res = await dio.post(
@@ -237,9 +238,49 @@ class ApiClient {
           'caregiver_email_or_phone': caregiverEmailOrPhone,
           'permission_level': permissionLevel,
           if (relationshipToUser != null) 'relationship_to_user': relationshipToUser,
+          if (initialPassword != null && initialPassword.isNotEmpty)
+            'initial_password': initialPassword,
         },
       );
       return Map<String, dynamic>.from(res.data as Map);
+    } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> registerCaregiver({
+    required String fullName,
+    String? email,
+    String? phoneNumber,
+    required String password,
+  }) async {
+    try {
+      final res = await dio.post(
+        '/auth/caregivers/register',
+        data: {
+          'full_name': fullName,
+          if (email != null && email.isNotEmpty) 'email': email,
+          if (phoneNumber != null && phoneNumber.isNotEmpty) 'phone_number': phoneNumber,
+          'password': password,
+        },
+      );
+      return Map<String, dynamic>.from(res.data as Map);
+    } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> listNotifications({
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    try {
+      final res = await dio.get(
+        '/notifications',
+        queryParameters: {'limit': limit, 'offset': offset},
+      );
+      final list = res.data as List;
+      return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     } catch (e) {
       throw _handleError(e);
     }

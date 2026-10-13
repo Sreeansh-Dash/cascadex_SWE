@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../state/medication_provider.dart';
+import '../state/alert_provider.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
 import '../widgets/big_button.dart';
@@ -96,6 +97,10 @@ class _AddMedicationScreenState extends ConsumerState<AddMedicationScreen> {
       final interactions = interactionCheck?['interactions'] as List? ?? [];
 
       if (interactions.isNotEmpty) {
+        // The API creates alerts/notifications in the same request. Refresh
+        // the alert provider before leaving so the alerts page is current.
+        await ref.read(alertProvider.notifier).loadAlerts();
+        if (!mounted) return;
         // Show dialog or alert warning
         await showDialog(
           context: context,

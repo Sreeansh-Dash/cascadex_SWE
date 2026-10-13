@@ -21,12 +21,14 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _caregiverEmailController = TextEditingController();
   final _relationshipController = TextEditingController();
+  final _caregiverPasswordController = TextEditingController();
   String _permissionLevel = 'view_only'; // 'view_only' | 'manage'
 
   @override
   void dispose() {
     _caregiverEmailController.dispose();
     _relationshipController.dispose();
+    _caregiverPasswordController.dispose();
     super.dispose();
   }
 
@@ -45,11 +47,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           relationship: _relationshipController.text.trim().isNotEmpty
               ? _relationshipController.text.trim()
               : null,
+          initialPassword: _caregiverPasswordController.text.trim().isNotEmpty
+              ? _caregiverPasswordController.text.trim()
+              : null,
         );
 
     if (success && mounted) {
       _caregiverEmailController.clear();
       _relationshipController.clear();
+      _caregiverPasswordController.clear();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Caregiver linked successfully!')),
       );
@@ -133,6 +139,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         labelText: 'Relationship (e.g. Daughter, Nurse)',
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.family_restroom),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _caregiverPasswordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Initial password (new caregiver only)',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.lock_outline),
                       ),
                     ),
                     const SizedBox(height: 12),

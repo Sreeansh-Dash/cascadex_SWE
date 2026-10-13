@@ -10,7 +10,7 @@ from slowapi.util import get_remote_address
 from app.core.config import settings
 from app.core.dependencies import get_current_user
 from app.db.neo4j_session import get_session
-from app.models.caregiver import CaregiverLinkRequest, CaregiverRead
+from app.models.caregiver import CaregiverCreate, CaregiverLinkRequest, CaregiverRead
 from app.models.user import (
     LoginRequest,
     OTPRequest,
@@ -25,6 +25,20 @@ from app.services import auth_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 limiter = Limiter(key_func=get_remote_address)
+
+
+@router.post(
+    "/caregivers/register",
+    response_model=CaregiverRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="Register a caregiver account",
+)
+async def register_caregiver_account(
+    caregiver_data: CaregiverCreate,
+    session: AsyncSession = Depends(get_session),
+) -> CaregiverRead:
+    """Register credentials before the caregiver is linked to a user."""
+    return await auth_service.register_caregiver(caregiver_data, session)
 
 
 @router.post(

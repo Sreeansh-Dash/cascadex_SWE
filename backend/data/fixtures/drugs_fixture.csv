@@ -31,3 +31,31 @@ D029,ketoconazole,azole antifungal,J02AB02,tablet,DDI-029
 D030,levodopa,dopaminergic,N04BA01,tablet,DDI-030
 D031,theophylline,xanthine bronchodilator,R03DA04,tablet,DDI-031
 D032,azathioprine,immunosuppressant,L04AX01,tablet,DDI-032
+D033,acetaminophen,analgesic,N02BE01,tablet,DDI-033
+D034,amoxicillin,penicillin antibiotic,J01CA04,capsule,DDI-034
+D035,azithromycin,macrolide antibiotic,J01FA10,tablet,DDI-035
+D036,cephalexin,cephalosporin antibiotic,J01DB01,capsule,DDI-036
+D037,doxycycline,tetracycline antibiotic,J01AA02,capsule,DDI-037
+D038,prednisone,corticosteroid,H02AB07,tablet,DDI-038
+D039,hydrochlorothiazide,thiazide diuretic,C03AA03,tablet,DDI-039
+D040,losartan,angiotensin receptor blocker,C09CA01,tablet,DDI-040
+D041,valsartan,angiotensin receptor blocker,C09CA03,tablet,DDI-041
+D042,propranolol,beta-blocker,C07AA05,tablet,DDI-042
+D043,gabapentin,antiepileptic,N03AX12,capsule,DDI-043
+D044,pregabalin,antiepileptic,N03AX16,capsule,DDI-044
+D045,alprazolam,benzodiazepine,N05BA12,tablet,DDI-045
+D046,lorazepam,benzodiazepine,N05BA06,tablet,DDI-046
+D047,clonazepam,benzodiazepine,N03AE01,tablet,DDI-047
+D048,escitalopram,SSRI antidepressant,N06AB10,tablet,DDI-048
+D049,venlafaxine,SNRI antidepressant,N06AX16,capsule,DDI-049
+D050,bupropion,aminoketone antidepressant,N06AX12,tablet,DDI-050
+D051,rosuvastatin,statin,C10AA07,tablet,DDI-051
+D052,ezetimibe,cholesterol absorption inhibitor,C10AX09,tablet,DDI-052
+D053,insulin,antidiabetic,A10A,injection,DDI-053
+D054,glimepiride,sulfonylurea antidiabetic,A10BB12,tablet,DDI-054
+D055,sitagliptin,DPP-4 inhibitor,A10BH01,tablet,DDI-055
+D056,empagliflozin,SGLT2 inhibitor,A10BK03,tablet,DDI-056
+D057,albuterol,bronchodilator,R03AC02,inhaler,DDI-057
+D058,fluticasone,corticosteroid,R03BA05,inhaler,DDI-058
+D059,ondansetron,antiemetic,A04AA01,tablet,DDI-059
+D060,ranitidine,histamine H2 blocker,A02BA02,tablet,DDI-060

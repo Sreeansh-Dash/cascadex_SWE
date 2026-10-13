@@ -7,7 +7,7 @@ without credentials.
 
 Stub-mode contract:
 - match_drug_name  → deterministic difflib result (or None if no close match)
-- plain_language_rewrite → returns original mechanism unchanged
+- plain_language_rewrite → returns a deterministic plain-language rewrite
 
 Live-key tests are skipped unless GEMINI_API_KEY is non-empty in the
 environment.  They hit the real Gemini API and are intentionally marked
@@ -84,16 +84,16 @@ class TestMatchDrugNameStub:
 class TestPlainLanguageRewriteStub:
     """Tests for plain_language_rewrite stub behaviour (no key)."""
 
-    def test_returns_original_when_no_key(self) -> None:
-        """Stub: mechanism returned unchanged when no API key is set."""
+    def test_simplifies_when_no_key(self) -> None:
+        """Stub: common clinical terms are rewritten for patients."""
         mechanism = "Pharmacodynamic synergism — both agents increase bleeding risk."
         result = plain_language_rewrite(mechanism)
         # In stub mode (no key), the result is the original string
         assert isinstance(result, str)
         assert len(result) > 0
-        # Stub mode returns original; live mode may rephrase but must be non-empty
         if not _HAS_KEY:
-            assert result == mechanism
+            assert "pharmacodynamic" not in result.lower()
+            assert "bleeding" in result.lower()
 
     def test_empty_string_returns_empty(self) -> None:
         """Empty mechanism → empty / unchanged output."""
