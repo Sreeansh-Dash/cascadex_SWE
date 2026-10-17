@@ -60,7 +60,7 @@ dev_dependencies:
   # Pinned at ^5.4.4 — mockito ^5.8.1 requires meta ^1.18.3 which conflicts
   # with the current Flutter SDK's pinned meta 1.18.0.  Re-evaluate after
   # running `flutter upgrade`.
-  mockito: ^5.4.4
+  mockito: ^5.8.1
 
 flutter:
   uses-material-design: true
