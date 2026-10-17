@@ -51,7 +51,7 @@ dev_dependencies:
 
   # Code generation — bumped to ^2.15.1 (last version compatible with
   # current Flutter SDK meta 1.18.0 pin; bump to ^2.16.0 after flutter upgrade)
-  build_runner: ^2.15.1
+  build_runner: ^2.16.1
 
   # Linting — bumped from ^4.0.0 → ^5.0.0
   flutter_lints: ^5.0.0
