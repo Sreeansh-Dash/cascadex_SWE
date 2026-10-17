@@ -54,7 +54,7 @@ dev_dependencies:
   build_runner: ^2.15.1
 
   # Linting — bumped from ^4.0.0 → ^5.0.0
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
   # Phase 05: HTTP mock for widget tests (http package includes MockClient)
   # Pinned at ^5.4.4 — mockito ^5.8.1 requires meta ^1.18.3 which conflicts
